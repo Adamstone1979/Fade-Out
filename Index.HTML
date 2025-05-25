@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fade Out - Screenplay Editor (Enhanced)</title>
+  <title>Fade Out - Screenplay Editor</title>
   <style>
     /* Dark Theme & Typography */
     body {
@@ -355,18 +355,8 @@
     </div>
   </div>
 
-  <!-- Editor -->
+  <!-- Editor - Blank -->
   <div id="editor" class="ltr" contenteditable="true" spellcheck="true" data-current-element="scene-heading">
-    <div class="element scene-heading" id="element-1">INT. COFFEE SHOP - DAY</div>
-    <div class="element action" id="element-2">A crowded coffee shop buzzes with energy. ALEX (30s, creative type) types furiously on their laptop.</div>
-    <div class="element character" id="element-3">ALEX</div>
-    <div class="element parenthetical" id="element-4">(to self)</div>
-    <div class="element dialogue" id="element-5">This screenplay format is working perfectly.</div>
-    <div class="element action" id="element-6">A BARISTA approaches with a fresh cup of coffee.</div>
-    <div class="element character" id="element-7">BARISTA</div>
-    <div class="element dialogue" id="element-8">Here's your inspiration juice. Need anything else?</div>
-    <div class="element character" id="element-9">ALEX</div>
-    <div class="element dialogue" id="element-10">Just what I needed. Thanks.</div>
   </div>
 
   <!-- Character suggestions -->
@@ -887,7 +877,7 @@
             scripts[0].parentNode.removeChild(scripts[0]);
           }
           
-          // Remove on* attributes (event handlers)
+          // Remove event handlers
           const allElements = tempDiv.getElementsByTagName('*');
           for (let i = 0; i < allElements.length; i++) {
             const attributes = allElements[i].attributes;
@@ -910,125 +900,74 @@
       }
       
       function exportScript() {
-        // Format the script for export
-        let exportText = '';
-        const elements = editor.querySelectorAll('.element');
+        const scriptContent = editor.innerHTML;
+        const formattedContent = formatScriptForExport(scriptContent);
         
-        elements.forEach(el => {
-          const type = getElementTypeFromClass(el);
-          const text = el.textContent.trim();
-          
-          if (!text) return;
-          
-          switch(type) {
-            case 'scene-heading':
-              exportText += text + '\n\n';
-              break;
-            case 'action':
-              exportText += text + '\n\n';
-              break;
-            case 'character':
-              exportText += '                    ' + text + '\n';
-              break;
-            case 'parenthetical':
-              exportText += '                    ' + text + '\n';
-              break;
-            case 'dialogue':
-              exportText += '          ' + text + '\n\n';
-              break;
-            case 'transition':
-              exportText += '                                    ' + text + '\n\n';
-              break;
-          }
-        });
-        
-        // Create a downloadable file
-        const blob = new Blob([exportText], { type: 'text/plain' });
+        // Create a download link
+        const blob = new Blob([formattedContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
+        a.href = url;
         a.download = 'screenplay.txt';
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
         
         showNotification('Script exported successfully!');
       }
       
-      function sendFeedback(feedback) {
-        // In a real app, this would send to a server
-        console.log('Feedback:', feedback);
-        // For now, just store in localStorage
-        const feedbackList = JSON.parse(localStorage.getItem('feedback') || '[]');
-        feedbackList.push({
-          text: feedback,
-          timestamp: Date.now()
+      function formatScriptForExport(content) {
+        // Create a temporary element to parse the HTML
+        const temp = document.createElement('div');
+        temp.innerHTML = content;
+        
+        // Get all script elements
+        const elements = temp.querySelectorAll('.element');
+        
+        // Format each element based on type
+        let formatted = '';
+        elements.forEach(el => {
+          const text = el.textContent.trim();
+          if (!text) return;
+          
+          if (el.classList.contains('scene-heading')) {
+            formatted += text + '\n\n';
+          } else if (el.classList.contains('action')) {
+            formatted += text + '\n\n';
+          } else if (el.classList.contains('character')) {
+            formatted += '                  ' + text + '\n';
+          } else if (el.classList.contains('parenthetical')) {
+            formatted += '              ' + text + '\n';
+          } else if (el.classList.contains('dialogue')) {
+            formatted += '          ' + text + '\n\n';
+          } else if (el.classList.contains('transition')) {
+            formatted += '                                   ' + text + '\n\n';
+          }
         });
-        localStorage.setItem('feedback', JSON.stringify(feedbackList));
+        
+        return formatted;
       }
       
       function generateShareLink() {
-        // In a real app, this would generate a server-side link
-        // For demo purposes, encode the script content in base64
-        const scriptContent = editor.innerHTML;
-        const encodedContent = btoa(scriptContent);
-        const shareId = Date.now().toString(36) + Math.random().toString(36).substr(2);
-        
-        // Store in localStorage for demo
-        const sharedScripts = JSON.parse(localStorage.getItem('sharedScripts') || '{}');
-        sharedScripts[shareId] = {
-          content: scriptContent,
-          timestamp: Date.now()
-        };
-        localStorage.setItem('sharedScripts', JSON.stringify(sharedScripts));
-        
-        return `${window.location.origin}?share=${shareId}`;
+        // In a real app, this would create a shareable link on the server
+        // For now, we'll just create a dummy link
+        return window.location.href + '?share=' + Date.now();
+      }
+      
+      function sendFeedback(feedback) {
+        // In a real app, this would send feedback to the server
+        console.log('Feedback:', feedback);
       }
       
       function showNotification(message) {
         notification.textContent = message;
         notification.style.display = 'block';
-        setTimeout(() => {
+        
+        // Hide after 3 seconds
+        setTimeout(function() {
           notification.style.display = 'none';
         }, 3000);
       }
-      
-      // Check for shared script in URL
-      function checkForSharedScript() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const shareId = urlParams.get('share');
-        
-        if (shareId) {
-          // In a real app, this would fetch from server
-          const sharedScripts = JSON.parse(localStorage.getItem('sharedScripts') || '{}');
-          if (sharedScripts[shareId]) {
-            // Create a temporary div to sanitize the content
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = sharedScripts[shareId].content;
-            
-            // Remove any script tags for security
-            const scripts = tempDiv.getElementsByTagName('script');
-            while (scripts[0]) {
-              scripts[0].parentNode.removeChild(scripts[0]);
-            }
-            
-            // Remove on* attributes (event handlers)
-            const allElements = tempDiv.getElementsByTagName('*');
-            for (let i = 0; i < allElements.length; i++) {
-              const attributes = allElements[i].attributes;
-              for (let j = attributes.length - 1; j >= 0; j--) {
-                const attrName = attributes[j].name;
-                if (attrName.startsWith('on')) {
-                  allElements[i].removeAttribute(attrName);
-                }
-              }
-            }
-            
-            editor.innerHTML = tempDiv.innerHTML;
-            showNotification('Shared script loaded successfully!');
-          }
-        }
-      }
-      
-      // Initialize the app
-      checkForSharedScript();
     });
   </script>
 </body>
