@@ -9,7 +9,7 @@
     body {
       background-color: #1c0f2e;
       color: white;
-      font-family: Courier, monospace;
+      font-family: 'Courier New', monospace;
       margin: 0;
       padding: 0;
     }
@@ -61,13 +61,6 @@
       gap: 5px;
     }
 
-    /* Toolbar Groups */
-    .toolbar-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-    }
-
     /* Editor */
     #editor {
       padding: 130px 20px 20px 20px;
@@ -90,7 +83,7 @@
     }
 
     /* Element Styles */
-    .line { margin: 0; padding: 2px 0; }
+    .element { margin: 0; padding: 2px 0; }
     .scene-heading { text-transform: uppercase; margin: 12px 0; text-align: left; font-weight: bold; }
     .action { text-align: left; margin: 12px 0; }
     .character { text-align: center; margin: 30px auto 10px auto; width: 60%; font-weight: bold; text-transform: uppercase; }
@@ -330,6 +323,43 @@
     .saved-script-item.selected {
       background-color: rgba(255, 215, 0, 0.2);
     }
+    
+    /* Format Modal Styling */
+    .format-option {
+      margin-bottom: 15px;
+      padding: 15px;
+      border: 1px solid gold;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .format-option:hover {
+      background-color: rgba(255, 215, 0, 0.1);
+    }
+    
+    body.light .format-option {
+      border-color: #000000;
+    }
+    
+    body.light .format-option:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    .format-option h3 {
+      margin-top: 0;
+      color: gold;
+    }
+    
+    body.light .format-option h3 {
+      color: #000000;
+    }
+    
+    .format-option p {
+      margin-bottom: 0;
+      font-size: 14px;
+      opacity: 0.8;
+    }
   </style>
 </head>
 <body class="dark-mode">
@@ -361,8 +391,17 @@
   </div>
 
   <!-- Editor -->
-  <div id="editor" class="editor" contenteditable="true">
-    <div class="line scene-heading active-line" contenteditable="true" data-type="scene-heading">INT. </div>
+  <div id="editor" class="ltr" contenteditable="true" spellcheck="true" data-current-element="scene-heading">
+    <div class="element scene-heading" id="element-1">INT. COFFEE SHOP - DAY</div>
+    <div class="element action" id="element-2">A crowded coffee shop buzzes with energy. ALEX (30s, creative type) types furiously on their laptop.</div>
+    <div class="element character" id="element-3">ALEX</div>
+    <div class="element parenthetical" id="element-4">(to self)</div>
+    <div class="element dialogue" id="element-5">This screenplay format is working perfectly.</div>
+    <div class="element action" id="element-6">A BARISTA approaches with a fresh cup of coffee.</div>
+    <div class="element character" id="element-7">BARISTA</div>
+    <div class="element dialogue" id="element-8">Here's your inspiration juice. Need anything else?</div>
+    <div class="element character" id="element-9">ALEX</div>
+    <div class="element dialogue" id="element-10">Just what I needed. Thanks.</div>
   </div>
 
   <!-- Character suggestions -->
@@ -424,6 +463,8 @@
       </div>
     </div>
   </div>
+  
+  <!-- Format Options Modal (dynamic) -->
 
   <script>
     // Arabic translations
@@ -449,6 +490,24 @@
     let currentElement = 'scene-heading';
     let isRtlMode = false;
     let scriptCharacters = new Set(['ALEX', 'BARISTA']);
+    let commonTransitions = [
+      'CUT TO:',
+      'FADE IN:',
+      'FADE OUT:',
+      'FADE TO BLACK',
+      'DISSOLVE TO:',
+      'SMASH CUT TO:',
+      'JUMP CUT TO:',
+      'MATCH CUT TO:',
+      'IRIS IN:',
+      'IRIS OUT:',
+      'WIPE TO:',
+      'CROSSFADE:',
+      'FLASH CUT TO:',
+      'INTERCUT WITH:',
+      'FREEZE FRAME.',
+      'THE END'
+    ];
 
     // DOM references
     let editor, notification;
@@ -465,9 +524,11 @@
       // Extract characters from existing content
       extractCharacters();
       
-      // Place cursor at the beginning
-      const sceneHeading = document.querySelector('.scene-heading');
-      if (sceneHeading) setCaretToEnd(sceneHeading);
+      // Find active element
+      const activeElement = document.querySelector('.element');
+      if (activeElement) {
+        makeElementActive(activeElement);
+      }
     });
 
     function setupListeners() {
@@ -487,13 +548,13 @@
       });
       
       // Action buttons
-      document.getElementById('save-btn')?.addEventListener('click', saveScript);
-      document.getElementById('load-btn')?.addEventListener('click', loadScript);
-      document.getElementById('export-btn')?.addEventListener('click', exportScript);
-      document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
-      document.getElementById('rtl-toggle')?.addEventListener('click', toggleDirection);
-      document.getElementById('feedback-btn')?.addEventListener('click', toggleFeedback);
-      document.getElementById('share-btn')?.addEventListener('click', shareScript);
+      document.getElementById('save-btn').addEventListener('click', showSaveOptions);
+      document.getElementById('load-btn').addEventListener('click', showLoadOptions);
+      document.getElementById('export-btn').addEventListener('click', showExportOptions);
+      document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+      document.getElementById('rtl-toggle').addEventListener('click', toggleDirection);
+      document.getElementById('feedback-btn').addEventListener('click', toggleFeedback);
+      document.getElementById('share-btn').addEventListener('click', shareScript);
       
       // Modal buttons
       document.getElementById('save-cancel')?.addEventListener('click', () => {
@@ -540,14 +601,12 @@
           
           // Only copy the elements we expect in our screenplay editor
           const safeContent = document.createDocumentFragment();
-          tempDiv.querySelectorAll('.line').forEach(element => {
+          tempDiv.querySelectorAll('.element').forEach(element => {
             // Only copy expected attributes to prevent script injection
             const safeElement = document.createElement('div');
             safeElement.className = element.className;
-            safeElement.dataset.type = element.dataset.type;
-            safeElement.contentEditable = 'true';
+            safeElement.id = element.id;
             safeElement.textContent = element.textContent; // Use textContent instead of innerHTML
-            safeElement.style.textAlign = element.style.textAlign;
             
             if (isRtlMode) {
               safeElement.setAttribute('dir', 'rtl');
@@ -616,56 +675,55 @@
           
           // Find closest screenplay element
           let element = target;
-          while (element && element !== editor && !element.classList.contains('line')) {
+          while (element && element !== editor && !element.classList.contains('element')) {
             element = element.parentNode;
           }
           
           if (element && element !== editor) {
-            // Set active line
-            const elements = document.querySelectorAll('#editor .line');
-            elements.forEach(el => el.classList.remove('active-line'));
-            element.classList.add('active-line');
-            
-            // Update current element type
-            currentElement = element.dataset.type;
-            
-            // Update button styles
-            updateActiveButton();
+            makeElementActive(element);
           }
         });
 
         // Handle input event for character autocomplete
         editor.addEventListener('input', function(e) {
-          const activeElement = document.querySelector('.active-line');
-          if (!activeElement) return;
+          const target = e.target;
+          if (target === editor) return;
           
-          const type = activeElement.dataset.type;
-          
-          // Auto-uppercase for scene heading, character, and transition
-          if (type === 'scene-heading' || type === 'character' || type === 'transition') {
-            const selection = window.getSelection();
-            if (!selection || selection.rangeCount === 0) return;
-            
-            const range = selection.getRangeAt(0);
-            const cursorPosition = range.startOffset;
-            
-            // Store the current text and cursor position
-            const originalText = activeElement.textContent || '';
-            
-            // Update to uppercase
-            activeElement.textContent = originalText.toUpperCase();
-            
-            // Restore cursor position
-            setCaretPosition(activeElement, cursorPosition);
+          // Find closest screenplay element
+          let element = target;
+          while (element && element !== editor && !element.classList.contains('element')) {
+            element = element.parentNode;
           }
           
-          // Show character suggestions
-          if (type === 'character') {
-            const text = activeElement.textContent?.trim().toUpperCase() || '';
-            if (text.length > 0) {
-              showCharacterSuggestions(text, activeElement);
-            } else {
-              hideCharacterSuggestions();
+          if (element && element !== editor) {
+            const elementClass = element.className.split(' ')[1];
+            
+            // Auto-uppercase for scene heading, character, and transition
+            if (elementClass === 'scene-heading' || elementClass === 'character' || elementClass === 'transition') {
+              const selection = window.getSelection();
+              if (!selection || selection.rangeCount === 0) return;
+              
+              const range = selection.getRangeAt(0);
+              const cursorPosition = range.startOffset;
+              
+              // Store the current text and cursor position
+              const originalText = element.textContent || '';
+              
+              // Update to uppercase
+              element.textContent = originalText.toUpperCase();
+              
+              // Restore cursor position
+              setCaretPosition(element, cursorPosition);
+            }
+            
+            // Show character suggestions
+            if (elementClass === 'character') {
+              const text = element.textContent?.trim().toUpperCase() || '';
+              if (text.length > 0) {
+                showCharacterSuggestions(text, element);
+              } else {
+                hideCharacterSuggestions();
+              }
             }
           }
         });
@@ -681,7 +739,7 @@
           hideTransitionDropdown();
         }
       });
-
+      
       // Set up transition dropdown items
       document.querySelectorAll('.transition-item').forEach(item => {
         item.addEventListener('click', function() {
@@ -694,31 +752,49 @@
       });
     }
 
+    // Make an element the active one
+    function makeElementActive(element) {
+      // Remove active class from all elements
+      document.querySelectorAll('.element').forEach(el => {
+        el.classList.remove('active-line');
+      });
+      
+      // Add active class to clicked element
+      element.classList.add('active-line');
+      
+      // Update current element type based on element class
+      const elementClasses = element.className.split(' ');
+      for (const cls of elementClasses) {
+        if (['scene-heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(cls)) {
+          currentElement = cls;
+          break;
+        }
+      }
+      
+      // Update active button in toolbar
+      updateActiveButton();
+      
+      // If it's a transition element, set up the dropdown on click
+      if (element.classList.contains('transition')) {
+        element.addEventListener('click', function() {
+          showTransitionDropdown(this);
+        });
+      }
+    }
+
     // Add a new screenplay element
     function addNewElement(type, text = '') {
       if (!editor) return;
       
       // Create new element
       const div = document.createElement('div');
-      div.className = `line ${type} active-line`;
-      div.dataset.type = type;
-      div.contentEditable = 'true';
+      div.className = `element ${type}`;
+      div.id = `element-${Date.now()}`;
       
       // Set RTL direction if needed
       if (isRtlMode) {
         div.setAttribute('dir', 'rtl');
         div.setAttribute('lang', 'ar');
-        
-        // Set proper alignment
-        if (type === 'scene-heading' || type === 'action') {
-          div.style.textAlign = 'right';
-        } else if (type === 'transition') {
-          div.style.textAlign = 'left';
-        }
-      } else {
-        if (type === 'transition') {
-          div.style.textAlign = 'right';
-        }
       }
       
       // Default content for specific types
@@ -732,10 +808,19 @@
         div.innerHTML = '&nbsp;';
       }
       
-      // Remove active line from other elements
+      // Find active element
       const activeElement = document.querySelector('.active-line');
+      
+      // Remove active line from all elements
+      document.querySelectorAll('.element').forEach(el => {
+        el.classList.remove('active-line');
+      });
+      
+      // Add active line to new element
+      div.classList.add('active-line');
+      
+      // Insert after active element or append to editor
       if (activeElement) {
-        activeElement.classList.remove('active-line');
         activeElement.after(div);
       } else {
         editor.appendChild(div);
@@ -744,24 +829,20 @@
       // Set cursor position
       setCaretToEnd(div);
       
-      // Add input handler for character elements to show suggestions
-      if (type === 'character') {
-        div.addEventListener('input', function() {
-          const text = this.textContent?.trim().toUpperCase() || '';
-          if (text.length > 0) {
-            showCharacterSuggestions(text, this);
-          } else {
-            hideCharacterSuggestions();
-          }
-        });
-      }
-      
-      // Add transition dropdown toggle for transition elements
+      // If it's a transition element, set up the dropdown on click
       if (type === 'transition') {
-        div.addEventListener('click', function(e) {
+        div.addEventListener('click', function() {
           showTransitionDropdown(this);
         });
       }
+      
+      // Update current element
+      currentElement = type;
+      
+      // Update active button
+      updateActiveButton();
+      
+      return div;
     }
 
     // Handle Enter key presses
@@ -769,8 +850,17 @@
       const activeElement = document.querySelector('.active-line');
       if (!activeElement) return;
       
-      // Get current type
-      const type = activeElement.dataset.type;
+      // Get current type from class
+      let type = null;
+      const classes = activeElement.className.split(' ');
+      for (const cls of classes) {
+        if (['scene-heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(cls)) {
+          type = cls;
+          break;
+        }
+      }
+      
+      if (!type) return;
       
       // Determine next type based on screenplay format rules
       let nextType = 'action'; // Default
@@ -809,8 +899,19 @@
       const activeElement = document.querySelector('.active-line');
       if (!activeElement) return;
       
+      // Get current type from class
+      let type = null;
+      const classes = activeElement.className.split(' ');
+      for (const cls of classes) {
+        if (['scene-heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(cls)) {
+          type = cls;
+          break;
+        }
+      }
+      
+      if (!type) return;
+      
       // Determine next type
-      const type = activeElement.dataset.type;
       let nextType = 'action';
       
       if (type === 'scene-heading') nextType = 'action';
@@ -820,10 +921,11 @@
       else if (type === 'dialogue') nextType = 'character';
       else if (type === 'transition') nextType = 'scene-heading';
       
-      // Update element class and dataset
+      // Remove old type class
       activeElement.classList.remove(type);
+      
+      // Add new type class
       activeElement.classList.add(nextType);
-      activeElement.dataset.type = nextType;
       
       // Special formatting for specific types
       if (nextType === 'scene-heading' && (activeElement.textContent.trim() === '' || activeElement.textContent === '\u00A0')) {
@@ -832,28 +934,14 @@
         activeElement.textContent = '()';
       }
       
-      // Update RTL settings
-      if (isRtlMode) {
-        if (nextType === 'scene-heading' || nextType === 'action') {
-          activeElement.style.textAlign = 'right';
-        } else if (nextType === 'transition') {
-          activeElement.style.textAlign = 'left';
-        } else {
-          activeElement.style.textAlign = '';
-        }
-      } else {
-        if (nextType === 'transition') {
-          activeElement.style.textAlign = 'right';
-        } else {
-          activeElement.style.textAlign = '';
-        }
-      }
-      
       // Update current element type
       currentElement = nextType;
       
       // Update button styles
       updateActiveButton();
+      
+      // Set focus to the element
+      setCaretToEnd(activeElement);
     }
 
     // Update active button in toolbar
@@ -884,7 +972,7 @@
       selection.removeAllRanges();
       selection.addRange(range);
     }
-
+    
     // Set caret position within an element
     function setCaretPosition(element, position) {
       if (!element) return;
@@ -897,25 +985,13 @@
       const range = document.createRange();
       const selection = window.getSelection();
       
-      // Get the first text node
-      let node = element.firstChild;
-      while (node && node.nodeType !== Node.TEXT_NODE) {
-        node = node.firstChild;
-      }
+      // Ensure position is valid
+      const maxLength = element.firstChild.textContent.length;
+      position = Math.min(Math.max(0, position), maxLength);
       
-      // If no text node found, create one
-      if (!node) {
-        element.textContent = ' ';
-        node = element.firstChild;
-      }
+      range.setStart(element.firstChild, position);
+      range.collapse(true);
       
-      // Set position, clamping to valid range
-      const maxLength = node.textContent.length;
-      const safePosition = Math.min(Math.max(0, position), maxLength);
-      
-      // Set range and selection
-      range.setStart(node, safePosition);
-      range.setEnd(node, safePosition);
       selection.removeAllRanges();
       selection.addRange(range);
     }
@@ -965,7 +1041,12 @@
             hideCharacterSuggestions();
             
             // After selecting a character, create a dialogue element
-            addNewElement('dialogue');
+            const nextElement = document.querySelector('.element.dialogue');
+            if (!nextElement) {
+              addNewElement('dialogue');
+            } else {
+              makeElementActive(nextElement);
+            }
           });
           characterSuggestions.appendChild(item);
         });
@@ -1001,8 +1082,265 @@
       }
     }
 
-    // Save script
-    function saveScript() {
+    // Show save options
+    function showSaveOptions() {
+      // Create modal for save options
+      const modal = document.createElement('div');
+      modal.className = 'modal-container';
+      modal.style.display = 'flex';
+      
+      const modalContent = document.createElement('div');
+      modalContent.className = 'modal';
+      
+      const title = document.createElement('h2');
+      title.textContent = 'Save Script';
+      
+      const subtitle = document.createElement('p');
+      subtitle.textContent = 'Choose save format:';
+      
+      // Create options
+      const optionsContainer = document.createElement('div');
+      
+      // Option 1: Save to Browser
+      const browserOption = document.createElement('div');
+      browserOption.className = 'format-option';
+      const browserTitle = document.createElement('h3');
+      browserTitle.textContent = 'Save to Browser';
+      const browserDesc = document.createElement('p');
+      browserDesc.textContent = 'Save your screenplay in this browser for later editing.';
+      browserOption.appendChild(browserTitle);
+      browserOption.appendChild(browserDesc);
+      
+      // Option 2: Final Draft
+      const fdxOption = document.createElement('div');
+      fdxOption.className = 'format-option';
+      const fdxTitle = document.createElement('h3');
+      fdxTitle.textContent = 'Download as Final Draft (FDX)';
+      const fdxDesc = document.createElement('p');
+      fdxDesc.textContent = 'Export in FDX format for use with Final Draft software.';
+      fdxOption.appendChild(fdxTitle);
+      fdxOption.appendChild(fdxDesc);
+      
+      // Option 3: JSON
+      const jsonOption = document.createElement('div');
+      jsonOption.className = 'format-option';
+      const jsonTitle = document.createElement('h3');
+      jsonTitle.textContent = 'Download as JSON';
+      const jsonDesc = document.createElement('p');
+      jsonDesc.textContent = 'Save as a structured JSON file that can be loaded back later.';
+      jsonOption.appendChild(jsonTitle);
+      jsonOption.appendChild(jsonDesc);
+      
+      // Add options to container
+      optionsContainer.appendChild(browserOption);
+      optionsContainer.appendChild(fdxOption);
+      optionsContainer.appendChild(jsonOption);
+      
+      // Cancel button
+      const cancelButton = document.createElement('button');
+      cancelButton.className = 'cancel-btn';
+      cancelButton.textContent = 'Cancel';
+      cancelButton.style.width = '100%';
+      cancelButton.style.marginTop = '20px';
+      
+      // Add everything to modal
+      modalContent.appendChild(title);
+      modalContent.appendChild(subtitle);
+      modalContent.appendChild(optionsContainer);
+      modalContent.appendChild(cancelButton);
+      
+      modal.appendChild(modalContent);
+      document.body.appendChild(modal);
+      
+      // Add event listeners
+      browserOption.addEventListener('click', () => {
+        document.body.removeChild(modal);
+        saveToLocal();
+      });
+      
+      fdxOption.addEventListener('click', () => {
+        document.body.removeChild(modal);
+        exportAsFdx();
+      });
+      
+      jsonOption.addEventListener('click', () => {
+        document.body.removeChild(modal);
+        saveAsJson();
+      });
+      
+      cancelButton.addEventListener('click', () => {
+        document.body.removeChild(modal);
+      });
+    }
+    
+    // Show load options
+    function showLoadOptions() {
+      // Create modal for load options
+      const modal = document.createElement('div');
+      modal.className = 'modal-container';
+      modal.style.display = 'flex';
+      
+      const modalContent = document.createElement('div');
+      modalContent.className = 'modal';
+      
+      const title = document.createElement('h2');
+      title.textContent = 'Load Script';
+      
+      const subtitle = document.createElement('p');
+      subtitle.textContent = 'Choose load source:';
+      
+      // Create options
+      const optionsContainer = document.createElement('div');
+      
+      // Option 1: Load from Browser
+      const browserOption = document.createElement('div');
+      browserOption.className = 'format-option';
+      const browserTitle = document.createElement('h3');
+      browserTitle.textContent = 'Load from Browser Storage';
+      const browserDesc = document.createElement('p');
+      browserDesc.textContent = 'Load a screenplay saved in this browser.';
+      browserOption.appendChild(browserTitle);
+      browserOption.appendChild(browserDesc);
+      
+      // Option 2: Upload File
+      const fileOption = document.createElement('div');
+      fileOption.className = 'format-option';
+      const fileTitle = document.createElement('h3');
+      fileTitle.textContent = 'Upload Script File';
+      const fileDesc = document.createElement('p');
+      fileDesc.textContent = 'Upload a screenplay file (FDX, JSON, or TXT).';
+      fileOption.appendChild(fileTitle);
+      fileOption.appendChild(fileDesc);
+      
+      // Add options to container
+      optionsContainer.appendChild(browserOption);
+      optionsContainer.appendChild(fileOption);
+      
+      // Cancel button
+      const cancelButton = document.createElement('button');
+      cancelButton.className = 'cancel-btn';
+      cancelButton.textContent = 'Cancel';
+      cancelButton.style.width = '100%';
+      cancelButton.style.marginTop = '20px';
+      
+      // Add everything to modal
+      modalContent.appendChild(title);
+      modalContent.appendChild(subtitle);
+      modalContent.appendChild(optionsContainer);
+      modalContent.appendChild(cancelButton);
+      
+      modal.appendChild(modalContent);
+      document.body.appendChild(modal);
+      
+      // Add event listeners
+      browserOption.addEventListener('click', () => {
+        document.body.removeChild(modal);
+        loadFromLocal();
+      });
+      
+      fileOption.addEventListener('click', () => {
+        document.body.removeChild(modal);
+        loadFromFile();
+      });
+      
+      cancelButton.addEventListener('click', () => {
+        document.body.removeChild(modal);
+      });
+    }
+    
+    // Show export options
+    function showExportOptions() {
+      // Create modal for export options
+      const modal = document.createElement('div');
+      modal.className = 'modal-container';
+      modal.style.display = 'flex';
+      
+      const modalContent = document.createElement('div');
+      modalContent.className = 'modal';
+      
+      const title = document.createElement('h2');
+      title.textContent = 'Export Script';
+      
+      const subtitle = document.createElement('p');
+      subtitle.textContent = 'Choose export format:';
+      
+      // Create options
+      const optionsContainer = document.createElement('div');
+      
+      // Option 1: FDX
+      const fdxOption = document.createElement('div');
+      fdxOption.className = 'format-option';
+      const fdxTitle = document.createElement('h3');
+      fdxTitle.textContent = 'Final Draft (FDX)';
+      const fdxDesc = document.createElement('p');
+      fdxDesc.textContent = 'Industry standard format for professional screenplay software.';
+      fdxOption.appendChild(fdxTitle);
+      fdxOption.appendChild(fdxDesc);
+      
+      // Option 2: PDF
+      const pdfOption = document.createElement('div');
+      pdfOption.className = 'format-option';
+      const pdfTitle = document.createElement('h3');
+      pdfTitle.textContent = 'PDF Document';
+      const pdfDesc = document.createElement('p');
+      pdfDesc.textContent = 'Professional looking PDF with proper screenplay formatting.';
+      pdfOption.appendChild(pdfTitle);
+      pdfOption.appendChild(pdfDesc);
+      
+      // Option 3: TXT
+      const txtOption = document.createElement('div');
+      txtOption.className = 'format-option';
+      const txtTitle = document.createElement('h3');
+      txtTitle.textContent = 'Plain Text (TXT)';
+      const txtDesc = document.createElement('p');
+      txtDesc.textContent = 'Simple text format readable by any text editor.';
+      txtOption.appendChild(txtTitle);
+      txtOption.appendChild(txtDesc);
+      
+      // Add options to container
+      optionsContainer.appendChild(fdxOption);
+      optionsContainer.appendChild(pdfOption);
+      optionsContainer.appendChild(txtOption);
+      
+      // Cancel button
+      const cancelButton = document.createElement('button');
+      cancelButton.className = 'cancel-btn';
+      cancelButton.textContent = 'Cancel';
+      cancelButton.style.width = '100%';
+      cancelButton.style.marginTop = '20px';
+      
+      // Add everything to modal
+      modalContent.appendChild(title);
+      modalContent.appendChild(subtitle);
+      modalContent.appendChild(optionsContainer);
+      modalContent.appendChild(cancelButton);
+      
+      modal.appendChild(modalContent);
+      document.body.appendChild(modal);
+      
+      // Add event listeners
+      fdxOption.addEventListener('click', () => {
+        document.body.removeChild(modal);
+        exportAsFdx();
+      });
+      
+      pdfOption.addEventListener('click', () => {
+        document.body.removeChild(modal);
+        exportAsPdf();
+      });
+      
+      txtOption.addEventListener('click', () => {
+        document.body.removeChild(modal);
+        exportAsTxt();
+      });
+      
+      cancelButton.addEventListener('click', () => {
+        document.body.removeChild(modal);
+      });
+    }
+
+    // Save to browser's localStorage
+    function saveToLocal() {
       const saveModal = document.getElementById('save-modal-container');
       if (saveModal) {
         saveModal.style.display = 'flex';
@@ -1013,9 +1351,61 @@
         }
       }
     }
-
-    // Load script
-    function loadScript() {
+    
+    // Save as JSON file
+    function saveAsJson() {
+      // Get script title and filename
+      const title = prompt('Enter a title for your script:', 'My Screenplay') || 'My Screenplay';
+      const fileName = prompt('Enter a file name:', 'screenplay.json') || 'screenplay.json';
+      
+      // Create JSON structure
+      const elements = document.querySelectorAll('#editor .element');
+      const scriptData = {
+        title: title,
+        lastModified: new Date().toISOString(),
+        characters: Array.from(scriptCharacters),
+        elements: []
+      };
+      
+      // Add elements to JSON
+      elements.forEach(el => {
+        const classes = el.className.split(' ');
+        let type = null;
+        for (const cls of classes) {
+          if (['scene-heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(cls)) {
+            type = cls;
+            break;
+          }
+        }
+        
+        if (!type) return;
+        
+        const text = el.textContent.trim();
+        if (!text) return;
+        
+        scriptData.elements.push({
+          type: type,
+          text: text,
+          id: el.id || `element-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+        });
+      });
+      
+      // Create and download JSON file
+      const blob = new Blob([JSON.stringify(scriptData, null, 2)], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName.endsWith('.json') ? fileName : fileName + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      showNotification('Script saved as JSON successfully!');
+    }
+    
+    // Load from browser's localStorage
+    function loadFromLocal() {
       const loadModal = document.getElementById('load-modal-container');
       const scriptsList = document.getElementById('saved-scripts-list');
       
@@ -1037,7 +1427,6 @@
             const item = document.createElement('div');
             item.className = 'saved-script-item';
             item.setAttribute('data-name', name);
-            
             // Create elements instead of using innerHTML to prevent XSS
             const nameElement = document.createElement('strong');
             nameElement.textContent = name;
@@ -1072,18 +1461,342 @@
         loadModal.style.display = 'flex';
       }
     }
-
-    // Export script
-    function exportScript() {
+    
+    // Load from file upload
+    function loadFromFile() {
+      // Create file input
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = '.json,.fdx,.txt';
+      fileInput.style.display = 'none';
+      document.body.appendChild(fileInput);
+      
+      // Trigger file selection
+      fileInput.click();
+      
+      // Handle file selection
+      fileInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+          const file = this.files[0];
+          const reader = new FileReader();
+          
+          reader.onload = function(e) {
+            try {
+              const fileExt = file.name.split('.').pop().toLowerCase();
+              
+              if (fileExt === 'json') {
+                // Parse JSON file
+                const scriptData = JSON.parse(e.target.result);
+                loadJsonScript(scriptData);
+              } else if (fileExt === 'fdx') {
+                // Parse FDX file
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(e.target.result, 'text/xml');
+                loadFdxScript(xmlDoc);
+              } else if (fileExt === 'txt') {
+                // Parse plain text
+                loadTextScript(e.target.result);
+              } else {
+                showNotification('Unsupported file format');
+              }
+            } catch (error) {
+              console.error('Error loading file:', error);
+              showNotification('Error loading file: ' + error.message);
+            }
+          };
+          
+          // Read file as text
+          if (file.name.endsWith('.json')) {
+            reader.readAsText(file);
+          } else if (file.name.endsWith('.fdx')) {
+            reader.readAsText(file);
+          } else if (file.name.endsWith('.txt')) {
+            reader.readAsText(file);
+          } else {
+            showNotification('Unsupported file format');
+          }
+        }
+        
+        // Remove the file input
+        document.body.removeChild(fileInput);
+      });
+    }
+    
+    // Load script from JSON format
+    function loadJsonScript(scriptData) {
+      try {
+        // Clear editor
+        editor.innerHTML = '';
+        
+        // Reset characters set
+        scriptCharacters = new Set();
+        if (scriptData.characters && Array.isArray(scriptData.characters)) {
+          scriptData.characters.forEach(char => scriptCharacters.add(char));
+        }
+        
+        // Add elements to editor
+        if (scriptData.elements && Array.isArray(scriptData.elements)) {
+          scriptData.elements.forEach(element => {
+            if (!element.type || !element.text) return;
+            
+            const div = document.createElement('div');
+            div.className = `element ${element.type}`;
+            div.id = element.id || `element-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            div.textContent = element.text;
+            
+            if (isRtlMode) {
+              div.setAttribute('dir', 'rtl');
+              div.setAttribute('lang', 'ar');
+            }
+            
+            editor.appendChild(div);
+          });
+        }
+        
+        // Set focus to first element
+        const firstElement = editor.querySelector('.element');
+        if (firstElement) {
+          makeElementActive(firstElement);
+        }
+        
+        showNotification(`Script "${scriptData.title || 'Untitled'}" loaded successfully!`);
+      } catch (error) {
+        console.error('Error loading JSON script:', error);
+        showNotification('Error loading script: ' + error.message);
+      }
+    }
+    
+    // Load script from FDX format
+    function loadFdxScript(xmlDoc) {
+      try {
+        // Clear editor
+        editor.innerHTML = '';
+        
+        // Reset characters set
+        scriptCharacters = new Set();
+        
+        // Extract paragraphs from FDX
+        const paragraphs = xmlDoc.querySelectorAll('Paragraph');
+        
+        // Process each paragraph
+        paragraphs.forEach(paragraph => {
+          const type = paragraph.getAttribute('Type');
+          const textElement = paragraph.querySelector('Text');
+          if (!type || !textElement) return;
+          
+          const text = textElement.textContent.trim();
+          if (!text) return;
+          
+          // Map FDX types to our types
+          let elementType = '';
+          switch (type) {
+            case 'Scene Heading':
+              elementType = 'scene-heading';
+              break;
+            case 'Action':
+              elementType = 'action';
+              break;
+            case 'Character':
+              elementType = 'character';
+              scriptCharacters.add(text);
+              break;
+            case 'Parenthetical':
+              elementType = 'parenthetical';
+              break;
+            case 'Dialogue':
+              elementType = 'dialogue';
+              break;
+            case 'Transition':
+              elementType = 'transition';
+              break;
+            default:
+              elementType = 'action';
+              break;
+          }
+          
+          // Create element
+          const div = document.createElement('div');
+          div.className = `element ${elementType}`;
+          div.id = `element-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          div.textContent = text;
+          
+          if (isRtlMode) {
+            div.setAttribute('dir', 'rtl');
+            div.setAttribute('lang', 'ar');
+          }
+          
+          editor.appendChild(div);
+        });
+        
+        // Set focus to first element
+        const firstElement = editor.querySelector('.element');
+        if (firstElement) {
+          makeElementActive(firstElement);
+        }
+        
+        // Try to get title
+        let title = 'Untitled';
+        const titleElement = xmlDoc.querySelector('Title');
+        if (titleElement && titleElement.textContent) {
+          title = titleElement.textContent.trim();
+        }
+        
+        showNotification(`Script "${title}" loaded successfully!`);
+      } catch (error) {
+        console.error('Error loading FDX script:', error);
+        showNotification('Error loading script: ' + error.message);
+      }
+    }
+    
+    // Load script from plain text
+    function loadTextScript(text) {
+      try {
+        // Clear editor
+        editor.innerHTML = '';
+        
+        // Reset characters set
+        scriptCharacters = new Set();
+        
+        // Split text into lines
+        const lines = text.split('\n');
+        
+        let currentType = 'scene-heading';
+        let buffer = '';
+        
+        // Process each line
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].trim();
+          
+          // Skip empty lines
+          if (!line) {
+            // Empty line might indicate end of current element
+            if (buffer) {
+              addElementFromText(currentType, buffer);
+              buffer = '';
+              
+              // Determine next element type
+              if (currentType === 'scene-heading') {
+                currentType = 'action';
+              } else if (currentType === 'transition') {
+                currentType = 'scene-heading';
+              } else if (currentType === 'dialogue') {
+                currentType = 'character';
+              }
+            }
+            continue;
+          }
+          
+          // Try to determine element type from content
+          if (line.toUpperCase() === line && line.includes('INT.') || line.includes('EXT.')) {
+            // If we have buffered text, add it
+            if (buffer) {
+              addElementFromText(currentType, buffer);
+            }
+            
+            // This is a scene heading
+            currentType = 'scene-heading';
+            buffer = line;
+          } else if (line.toUpperCase() === line && line.endsWith('TO:')) {
+            // If we have buffered text, add it
+            if (buffer) {
+              addElementFromText(currentType, buffer);
+            }
+            
+            // This is a transition
+            currentType = 'transition';
+            buffer = line;
+          } else if (line.toUpperCase() === line && !line.startsWith('(')) {
+            // If we have buffered text, add it
+            if (buffer) {
+              addElementFromText(currentType, buffer);
+            }
+            
+            // This is a character
+            currentType = 'character';
+            buffer = line;
+            scriptCharacters.add(line);
+          } else if (line.startsWith('(') && line.endsWith(')')) {
+            // If we have buffered text, add it
+            if (buffer) {
+              addElementFromText(currentType, buffer);
+            }
+            
+            // This is a parenthetical
+            currentType = 'parenthetical';
+            buffer = line;
+          } else {
+            // If we're coming from a character or parenthetical, this is dialogue
+            if (currentType === 'character' || currentType === 'parenthetical') {
+              // If we have buffered text, add it
+              if (buffer) {
+                addElementFromText(currentType, buffer);
+              }
+              
+              currentType = 'dialogue';
+              buffer = line;
+            } else if (buffer) {
+              // Append to current buffer with a space
+              buffer += ' ' + line;
+            } else {
+              // Start new buffer
+              buffer = line;
+            }
+          }
+        }
+        
+        // Add any remaining buffered text
+        if (buffer) {
+          addElementFromText(currentType, buffer);
+        }
+        
+        // Set focus to first element
+        const firstElement = editor.querySelector('.element');
+        if (firstElement) {
+          makeElementActive(firstElement);
+        }
+        
+        showNotification('Script loaded successfully!');
+      } catch (error) {
+        console.error('Error loading text script:', error);
+        showNotification('Error loading script: ' + error.message);
+      }
+    }
+    
+    // Helper function to add element from text
+    function addElementFromText(type, text) {
+      const div = document.createElement('div');
+      div.className = `element ${type}`;
+      div.id = `element-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      div.textContent = text;
+      
+      if (isRtlMode) {
+        div.setAttribute('dir', 'rtl');
+        div.setAttribute('lang', 'ar');
+      }
+      
+      editor.appendChild(div);
+    }
+    
+    // Export as plain text
+    function exportAsTxt() {
       // Create content for export
       let content = '';
       
       // Get all elements
-      const elements = document.querySelectorAll('#editor .line');
+      const elements = document.querySelectorAll('#editor .element');
       elements.forEach(el => {
-        const type = el.dataset.type;
-        const text = el.textContent.trim();
+        const classes = el.className.split(' ');
+        let type = null;
+        for (const cls of classes) {
+          if (['scene-heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(cls)) {
+            type = cls;
+            break;
+          }
+        }
         
+        if (!type) return;
+        
+        const text = el.textContent.trim();
         if (!text) return;
         
         // Format based on element type
@@ -1109,18 +1822,291 @@
         }
       });
       
+      // Prompt for file name
+      const fileName = prompt('Enter a file name for your script:', 'screenplay.txt') || 'screenplay.txt';
+      
       // Create a download link
       const blob = new Blob([content], {type: 'text/plain'});
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'screenplay.txt';
+      a.download = fileName.endsWith('.txt') ? fileName : fileName + '.txt';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
-      showNotification('Script exported successfully!');
+      showNotification('Script exported as TXT successfully!');
+    }
+    
+    // Export as Final Draft FDX format
+    function exportAsFdx() {
+      // Get script title
+      const title = prompt('Enter a title for your script:', 'My Screenplay') || 'My Screenplay';
+      const fileName = prompt('Enter a file name:', 'screenplay.fdx') || 'screenplay.fdx';
+      
+      // Create FDX XML structure
+      let fdxContent = `<?xml version="1.0" encoding="UTF-8"?>
+<FinalDraft DocumentType="Script" Template="Screenplay" Version="3">
+  <Content>
+    <TitlePage>
+      <Title>${escapeXml(title)}</Title>
+      <Author>Fade Out Writer</Author>
+      <Copyright>Copyright (c) ${new Date().getFullYear()}</Copyright>
+    </TitlePage>
+    <Paragraph Type="Action">
+      <Text></Text>
+    </Paragraph>`;
+      
+      // Get all elements and convert to FDX format
+      const elements = document.querySelectorAll('#editor .element');
+      elements.forEach(el => {
+        const classes = el.className.split(' ');
+        let type = null;
+        for (const cls of classes) {
+          if (['scene-heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(cls)) {
+            type = cls;
+            break;
+          }
+        }
+        
+        if (!type) return;
+        
+        const text = el.textContent.trim();
+        if (!text) return;
+        
+        // Map our types to Final Draft types
+        let fdxType = '';
+        switch (type) {
+          case 'scene-heading':
+            fdxType = 'Scene Heading';
+            break;
+          case 'action':
+            fdxType = 'Action';
+            break;
+          case 'character':
+            fdxType = 'Character';
+            break;
+          case 'parenthetical':
+            fdxType = 'Parenthetical';
+            break;
+          case 'dialogue':
+            fdxType = 'Dialogue';
+            break;
+          case 'transition':
+            fdxType = 'Transition';
+            break;
+        }
+        
+        // Add paragraph to FDX
+        fdxContent += `
+    <Paragraph Type="${fdxType}">
+      <Text>${escapeXml(text)}</Text>
+    </Paragraph>`;
+      });
+      
+      // Close FDX structure
+      fdxContent += `
+  </Content>
+</FinalDraft>`;
+      
+      // Create a download link
+      const blob = new Blob([fdxContent], {type: 'application/xml'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName.endsWith('.fdx') ? fileName : fileName + '.fdx';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      showNotification('Script exported as FDX successfully!');
+    }
+    
+    // Export as PDF format
+    function exportAsPdf() {
+      const title = prompt('Enter a title for your script:', 'My Screenplay') || 'My Screenplay';
+      const fileName = prompt('Enter a file name:', 'screenplay.pdf') || 'screenplay.pdf';
+      
+      // Create a styled HTML version for PDF conversion
+      let htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>${escapeHtml(title)}</title>
+  <style>
+    @page {
+      size: 8.5in 11in;
+      margin: 1in;
+    }
+    body {
+      font-family: Courier, monospace;
+      font-size: 12pt;
+      line-height: 1.2;
+      margin: 0;
+      padding: 0;
+    }
+    .title-page {
+      height: 8.5in;
+      position: relative;
+      text-align: center;
+      page-break-after: always;
+    }
+    .title {
+      font-size: 24pt;
+      text-align: center;
+      position: absolute;
+      top: 3.5in;
+      width: 100%;
+    }
+    .author {
+      position: absolute;
+      bottom: 3in;
+      width: 100%;
+      text-align: center;
+    }
+    .copyright {
+      position: absolute;
+      bottom: 1in;
+      width: 100%;
+      text-align: center;
+      font-size: 10pt;
+    }
+    .scene-heading {
+      text-transform: uppercase;
+      font-weight: bold;
+      margin-top: 1.5em;
+      margin-bottom: 1em;
+    }
+    .action {
+      margin: 1em 0;
+    }
+    .character {
+      text-transform: uppercase;
+      margin-top: 1em;
+      margin-bottom: 0.1em;
+      margin-left: 2.2in;
+    }
+    .parenthetical {
+      margin-left: 1.9in;
+      margin-bottom: 0.1em;
+    }
+    .dialogue {
+      width: 3.5in;
+      margin-left: 1.5in;
+      margin-bottom: 1em;
+    }
+    .transition {
+      text-align: right;
+      text-transform: uppercase;
+      margin: 1em 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="title-page">
+    <div class="title">${escapeHtml(title)}</div>
+    <div class="author">Written by<br>Fade Out Writer</div>
+    <div class="copyright">Copyright (c) ${new Date().getFullYear()}</div>
+  </div>`;
+      
+      // Get all elements and convert to HTML
+      const elements = document.querySelectorAll('#editor .element');
+      elements.forEach(el => {
+        const classes = el.className.split(' ');
+        let type = null;
+        for (const cls of classes) {
+          if (['scene-heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(cls)) {
+            type = cls;
+            break;
+          }
+        }
+        
+        if (!type) return;
+        
+        const text = el.textContent.trim();
+        if (!text) return;
+        
+        // Add element to HTML
+        htmlContent += `
+  <div class="${type}">${escapeHtml(text)}</div>`;
+      });
+      
+      // Close HTML
+      htmlContent += `
+</body>
+</html>`;
+      
+      // Create a new window for printing
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      
+      // Show instructions for saving as PDF
+      const instructions = document.createElement('div');
+      instructions.className = 'modal-container';
+      instructions.style.display = 'flex';
+      
+      const instructionsContent = document.createElement('div');
+      instructionsContent.className = 'modal';
+      
+      const instructionsTitle = document.createElement('h2');
+      instructionsTitle.textContent = 'Save as PDF';
+      
+      const instructionsText = document.createElement('p');
+      instructionsText.innerHTML = 'A new tab has opened with your formatted screenplay.<br><br>To save as PDF:<br>1. Press Ctrl+P (or Cmd+P on Mac)<br>2. Select "Save as PDF" in the printer options<br>3. Click Save';
+      
+      const okButton = document.createElement('button');
+      okButton.className = 'confirm-btn';
+      okButton.textContent = 'OK';
+      okButton.style.width = '100%';
+      okButton.style.marginTop = '20px';
+      
+      instructionsContent.appendChild(instructionsTitle);
+      instructionsContent.appendChild(instructionsText);
+      instructionsContent.appendChild(okButton);
+      
+      instructions.appendChild(instructionsContent);
+      document.body.appendChild(instructions);
+      
+      // Handle ok button click
+      okButton.addEventListener('click', () => {
+        document.body.removeChild(instructions);
+      });
+      
+      // Set timeout to trigger print dialog
+      setTimeout(() => {
+        printWindow.print();
+      }, 1000);
+      
+      showNotification('Print dialog opened to save as PDF!');
+    }
+    
+    // Helper function to escape XML
+    function escapeXml(unsafe) {
+      return unsafe.replace(/[<>&'"]/g, function (c) {
+        switch (c) {
+          case '<': return '&lt;';
+          case '>': return '&gt;';
+          case '&': return '&amp;';
+          case '\'': return '&apos;';
+          case '"': return '&quot;';
+        }
+      });
+    }
+    
+    // Helper function to escape HTML
+    function escapeHtml(unsafe) {
+      return unsafe.replace(/[&<>"']/g, function (c) {
+        switch (c) {
+          case '&': return '&amp;';
+          case '<': return '&lt;';
+          case '>': return '&gt;';
+          case '"': return '&quot;';
+          case '\'': return '&#039;';
+        }
+      });
     }
 
     // Toggle theme
@@ -1140,7 +2126,7 @@
     // Toggle direction (RTL for Arabic)
     function toggleDirection() {
       const dirToggle = document.getElementById('rtl-toggle');
-      const elements = document.querySelectorAll('#editor .line');
+      const elements = document.querySelectorAll('#editor .element');
       
       isRtlMode = !isRtlMode;
       
@@ -1154,14 +2140,6 @@
         elements.forEach(el => {
           el.setAttribute('dir', 'rtl');
           el.setAttribute('lang', 'ar');
-          
-          // Special alignments
-          const type = el.dataset.type;
-          if (type === 'scene-heading' || type === 'action') {
-            el.style.textAlign = 'right';
-          } else if (type === 'transition') {
-            el.style.textAlign = 'left';
-          }
         });
         
         // Update toolbar labels
@@ -1176,14 +2154,6 @@
         elements.forEach(el => {
           el.removeAttribute('dir');
           el.removeAttribute('lang');
-          
-          // Reset alignments
-          const type = el.dataset.type;
-          if (type === 'transition') {
-            el.style.textAlign = 'right';
-          } else {
-            el.style.textAlign = '';
-          }
         });
         
         // Update toolbar labels
