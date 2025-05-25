@@ -1,73 +1,1035 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>Fade Out - Screenplay Editor</title>
-    <meta name="description" content="Fade Out - A professional screenplay editor with bilingual support for writing, formatting, and sharing scripts with industry-standard formatting." />
-    <meta property="og:title" content="Fade Out - Professional Screenplay Editor" />
-    <meta property="og:description" content="Write, format, and share screenplays with industry-standard formatting. Bilingual support included." />
-    <meta property="og:type" content="website" />
-    <script src="/capture-complete-html.js"></script>
-    <script>
-      // Display the DOM structure on the page after React renders
-      window.addEventListener('load', function() {
-        // Wait for React to render everything
-        setTimeout(function() {
-          // Create element to display the HTML
-          const displayElement = document.createElement('pre');
-          displayElement.id = 'html-display';
-          displayElement.style.position = 'fixed';
-          displayElement.style.top = '10px';
-          displayElement.style.right = '10px';
-          displayElement.style.maxWidth = '80vw';
-          displayElement.style.maxHeight = '80vh';
-          displayElement.style.overflow = 'auto';
-          displayElement.style.background = 'white';
-          displayElement.style.border = '1px solid black';
-          displayElement.style.padding = '10px';
-          displayElement.style.zIndex = '10000';
-          displayElement.style.whiteSpace = 'pre-wrap';
-          displayElement.style.fontSize = '12px';
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fade Out - Screenplay Editor (Enhanced)</title>
+  <style>
+    /* Dark Theme & Typography */
+    body {
+      background-color: #1c0f2e;
+      color: white;
+      font-family: Courier, monospace;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body.light {
+      background-color: #f8f8f8;
+      color: #000000;
+    }
+
+    /* App Header */
+    .app-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background-color: #1c0f2e;
+      color: white;
+      text-align: center;
+      padding: 10px 0;
+      z-index: 1000;
+      border-bottom: 1px solid #472e63;
+      direction: ltr; /* Force LTR for header */
+    }
+    
+    .app-name {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    
+    .tagline {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    /* Toolbar */
+    .toolbar {
+      position: fixed;
+      top: 70px; /* Below header */
+      left: 0;
+      right: 0;
+      background-color: #2a1240;
+      border-bottom: 2px solid #472e63;
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      z-index: 999;
+      gap: 5px;
+    }
+
+    /* Toolbar Groups */
+    .toolbar-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    /* Editor */
+    #editor {
+      padding: 130px 20px 20px 20px;
+      outline: none;
+      white-space: pre-wrap;
+      min-height: 80vh;
+    }
+
+    /* RTL Fixes */
+    body[dir="rtl"] .toolbar {
+      direction: rtl;
+    }
+    
+    body[dir="rtl"] .toolbar button {
+      float: right;
+    }
+    
+    .rtl {
+      direction: rtl;
+    }
+
+    /* Element Styles */
+    .element { margin: 0; padding: 2px 0; }
+    .scene-heading { text-transform: uppercase; margin: 12px 0; text-align: left; font-weight: bold; }
+    .action { text-align: left; margin: 12px 0; }
+    .character { text-align: center; margin: 30px auto 10px auto; width: 60%; font-weight: bold; text-transform: uppercase; }
+    .dialogue { text-align: left; margin: 0 auto 15px auto; width: 70%; }
+    .parenthetical { font-style: italic; margin: 0 auto 10px auto; width: 50%; text-align: center; }
+    .transition { text-align: right; margin-right: 10%; font-weight: bold; text-transform: uppercase; }
+    .active-line { background-color: rgba(255, 215, 0, 0.1); }
+
+    body.light .toolbar {
+      background-color: #e3e3e3;
+      border-bottom: 2px solid #cccccc;
+    }
+
+    .toolbar button {
+      background-color: #472e63;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 3px;
+      min-width: 100px;
+    }
+
+    body.light .toolbar button {
+      background-color: #dddddd;
+      color: #000000;
+    }
+
+    .toolbar button.active {
+      background-color: #6b458e;
+    }
+
+    /* Character suggestions */
+    #character-suggestions {
+      position: absolute;
+      background-color: #2a1240;
+      border: 1px solid gold;
+      border-radius: 3px;
+      max-height: 150px;
+      overflow-y: auto;
+      z-index: 10;
+      display: none;
+    }
+
+    body.light #character-suggestions {
+      background-color: #e3e3e3;
+      border: 1px solid #000000;
+    }
+
+    .character-suggestion-item {
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+
+    .character-suggestion-item:hover {
+      background-color: #472e63;
+    }
+
+    body.light .character-suggestion-item:hover {
+      background-color: #cccccc;
+    }
+
+    /* Notification */
+    #notification {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: gold;
+      color: #1c0f2e;
+      padding: 10px 20px;
+      border-radius: 3px;
+      display: none;
+      z-index: 100;
+    }
+
+    /* Modals */
+    .modal-container {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 1001;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal {
+      background-color: #2a1240;
+      border: 1px solid gold;
+      border-radius: 5px;
+      padding: 20px;
+      width: 90%;
+      max-width: 500px;
+    }
+
+    body.light .modal {
+      background-color: #f8f8f8;
+      border: 1px solid #000000;
+    }
+
+    .modal h2 {
+      margin-top: 0;
+      color: gold;
+    }
+
+    body.light .modal h2 {
+      color: #000000;
+    }
+
+    .modal input {
+      width: 100%;
+      padding: 8px;
+      margin: 10px 0;
+      border-radius: 3px;
+      border: 1px solid gold;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    body.light .modal input {
+      border: 1px solid #000000;
+      background-color: white;
+      color: #000000;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .cancel-btn {
+      background: none;
+      border: 1px solid gold;
+      color: gold;
+      padding: 8px 16px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .confirm-btn {
+      background-color: gold;
+      color: #1c0f2e;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    body.light .cancel-btn {
+      border: 1px solid #000000;
+      color: #000000;
+    }
+
+    body.light .confirm-btn {
+      background-color: #000000;
+      color: white;
+    }
+
+    /* Feedback box */
+    #feedback-box {
+      display: none;
+      margin: 10px;
+      padding: 15px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+    }
+
+    #feedback-text {
+      width: 100%;
+      height: 80px;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 3px;
+      border: 1px solid gold;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    body.light #feedback-text {
+      border: 1px solid #000000;
+      background-color: white;
+      color: #000000;
+    }
+
+    #send-feedback-btn {
+      background-color: gold;
+      color: #1c0f2e;
+      border: none;
+      padding: 8px 16px;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+
+    body.light #send-feedback-btn {
+      background-color: #000000;
+      color: white;
+    }
+    
+    /* Transition dropdown */
+    #transition-dropdown {
+      position: absolute;
+      background-color: #2a1240;
+      border: 1px solid gold;
+      border-radius: 3px;
+      max-height: 250px;
+      width: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+    }
+    
+    .transition-item {
+      padding: 8px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+    }
+    
+    .transition-item:hover {
+      background-color: #472e63;
+    }
+    
+    body.light #transition-dropdown {
+      background-color: #f8f8f8;
+      border: 1px solid #000;
+    }
+    
+    body.light .transition-item:hover {
+      background-color: #ddd;
+    }
+  </style>
+</head>
+<body class="dark-mode">
+  <!-- Header -->
+  <div class="app-header">
+    <div class="app-name">Fade Out</div>
+    <div class="tagline">Write. Rewrite. Fade Out.</div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div>
+      <button id="scene-heading-btn" class="element-button active" data-type="scene-heading">SCENE HEADING</button>
+      <button id="action-btn" class="element-button" data-type="action">ACTION</button>
+      <button id="character-btn" class="element-button" data-type="character">CHARACTER</button>
+      <button id="dialogue-btn" class="element-button" data-type="dialogue">DIALOGUE</button>
+      <button id="parenthetical-btn" class="element-button" data-type="parenthetical">PARENTHETICAL</button>
+      <button id="transition-btn" class="element-button" data-type="transition">TRANSITION</button>
+    </div>
+    <div>
+      <button id="save-btn">SAVE</button>
+      <button id="load-btn">LOAD</button>
+      <button id="export-btn">EXPORT</button>
+      <button id="theme-toggle">LIGHT</button>
+      <button id="rtl-toggle">ARABIC</button>
+      <button id="feedback-btn">FEEDBACK</button>
+      <button id="share-btn">SHARE</button>
+    </div>
+  </div>
+
+  <!-- Editor -->
+  <div id="editor" class="ltr" contenteditable="true" spellcheck="true" data-current-element="scene-heading">
+    <div class="element scene-heading" id="element-1">INT. COFFEE SHOP - DAY</div>
+    <div class="element action" id="element-2">A crowded coffee shop buzzes with energy. ALEX (30s, creative type) types furiously on their laptop.</div>
+    <div class="element character" id="element-3">ALEX</div>
+    <div class="element parenthetical" id="element-4">(to self)</div>
+    <div class="element dialogue" id="element-5">This screenplay format is working perfectly.</div>
+    <div class="element action" id="element-6">A BARISTA approaches with a fresh cup of coffee.</div>
+    <div class="element character" id="element-7">BARISTA</div>
+    <div class="element dialogue" id="element-8">Here's your inspiration juice. Need anything else?</div>
+    <div class="element character" id="element-9">ALEX</div>
+    <div class="element dialogue" id="element-10">Just what I needed. Thanks.</div>
+  </div>
+
+  <!-- Character suggestions -->
+  <div id="character-suggestions"></div>
+  
+  <!-- Transition dropdown -->
+  <div id="transition-dropdown">
+    <div class="transition-item" data-text="CUT TO:">CUT TO:</div>
+    <div class="transition-item" data-text="FADE IN:">FADE IN:</div>
+    <div class="transition-item" data-text="FADE OUT:">FADE OUT:</div>
+    <div class="transition-item" data-text="FADE TO:">FADE TO:</div>
+    <div class="transition-item" data-text="DISSOLVE TO:">DISSOLVE TO:</div>
+    <div class="transition-item" data-text="BACK TO:">BACK TO:</div>
+    <div class="transition-item" data-text="MATCH CUT TO:">MATCH CUT TO:</div>
+    <div class="transition-item" data-text="JUMP CUT TO:">JUMP CUT TO:</div>
+  </div>
+  
+  <!-- Notification -->
+  <div id="notification">Notification Message</div>
+  
+  <!-- Feedback box -->
+  <div id="feedback-box">
+    <textarea id="feedback-text" placeholder="Enter your feedback here..."></textarea>
+    <button id="send-feedback-btn">Send Feedback</button>
+  </div>
+  
+  <!-- Save Modal -->
+  <div class="modal-container" id="save-modal-container">
+    <div class="modal">
+      <h2>Save Script</h2>
+      <input type="text" id="script-title" placeholder="Script Title">
+      <div class="modal-buttons">
+        <button class="cancel-btn" id="save-cancel">Cancel</button>
+        <button class="confirm-btn" id="save-confirm">Save</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Load Modal -->
+  <div class="modal-container" id="load-modal-container">
+    <div class="modal">
+      <h2>Load Script</h2>
+      <div id="saved-scripts-list" style="max-height: 200px; overflow-y: auto; margin: 10px 0;"></div>
+      <div class="modal-buttons">
+        <button class="cancel-btn" id="load-cancel">Cancel</button>
+        <button class="confirm-btn" id="load-confirm">Load</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Share Modal -->
+  <div class="modal-container" id="share-modal-container">
+    <div class="modal">
+      <h2>Share Script</h2>
+      <input type="text" id="share-link" readonly placeholder="Share link will appear here">
+      <div class="modal-buttons">
+        <button class="cancel-btn" id="share-cancel">Close</button>
+        <button class="confirm-btn" id="copy-link">Copy Link</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Script for the screenplay editor functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      // Global variables
+      let currentElement = 'scene-heading';
+      let isRtlMode = false;
+      
+      // DOM elements
+      const editor = document.getElementById('editor');
+      const elementButtons = document.querySelectorAll('.element-button');
+      const characterSuggestions = document.getElementById('character-suggestions');
+      const transitionDropdown = document.getElementById('transition-dropdown');
+      const notification = document.getElementById('notification');
+      const saveModalContainer = document.getElementById('save-modal-container');
+      const loadModalContainer = document.getElementById('load-modal-container');
+      const shareModalContainer = document.getElementById('share-modal-container');
+      const feedbackBox = document.getElementById('feedback-box');
+      
+      // Initialize editor if empty
+      if (editor.children.length === 0) {
+        const sceneHeading = document.createElement('div');
+        sceneHeading.className = 'element scene-heading';
+        sceneHeading.id = 'element-1';
+        sceneHeading.textContent = 'INT. ';
+        editor.appendChild(sceneHeading);
+        
+        // Set focus to the new element
+        setFocusToEnd(sceneHeading);
+      }
+      
+      // Set current element type based on active button
+      elementButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          elementButtons.forEach(btn => btn.classList.remove('active'));
+          this.classList.add('active');
+          currentElement = this.dataset.type;
+          editor.dataset.currentElement = currentElement;
+        });
+      });
+      
+      // Handle editor clicks
+      editor.addEventListener('click', function(e) {
+        const clickedElement = getClickedElement(e.target);
+        if (clickedElement) {
+          updateActiveLine(clickedElement);
           
-          // Get the HTML of the editor and main app content only
-          const editorElement = document.getElementById('editor');
-          const rootElement = document.getElementById('root');
+          // Update current element type based on clicked element
+          const elementType = getElementTypeFromClass(clickedElement);
+          if (elementType) {
+            currentElement = elementType;
+            updateActiveButton();
+          }
+        }
+      });
+      
+      // Handle key presses in editor
+      editor.addEventListener('keydown', function(e) {
+        const activeElement = document.querySelector('.active-line');
+        
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
           
-          if (editorElement) {
-            displayElement.textContent = editorElement.outerHTML;
-          } else if (rootElement && rootElement.children.length > 0) {
-            displayElement.textContent = rootElement.innerHTML;
+          // Determine next element type based on current type
+          const nextType = getNextElementType();
+          insertNewElement(nextType);
+        } else if (e.key === 'Tab') {
+          e.preventDefault();
+          
+          // Cycle through element types
+          currentElement = cycleElementType();
+          updateActiveButton();
+          
+          if (activeElement) {
+            // Change the class of the active element
+            removeElementTypeClasses(activeElement);
+            activeElement.classList.add(currentElement);
+          }
+        }
+        
+        // Handle character detection for suggestions
+        if (activeElement && currentElement === 'character') {
+          const text = activeElement.textContent.trim().toUpperCase();
+          if (text.length > 1) {
+            showCharacterSuggestions(text, activeElement);
           } else {
-            displayElement.textContent = 'Editor not found yet. React may still be rendering...';
+            hideCharacterSuggestions();
+          }
+        }
+        
+        // Handle transition dropdown
+        if (activeElement && currentElement === 'transition' && e.key === ' ') {
+          const rect = activeElement.getBoundingClientRect();
+          showTransitionDropdown(rect, activeElement);
+        }
+      });
+      
+      // Character suggestions functionality
+      function showCharacterSuggestions(text, element) {
+        // Get list of characters from existing elements
+        const characters = getCharactersFromScript();
+        
+        // Filter based on current text
+        const matches = characters.filter(char => 
+          char.startsWith(text) && char !== text
+        );
+        
+        if (matches.length > 0) {
+          // Show suggestions
+          characterSuggestions.innerHTML = '';
+          const rect = element.getBoundingClientRect();
+          
+          characterSuggestions.style.top = `${rect.bottom}px`;
+          characterSuggestions.style.left = `${rect.left}px`;
+          characterSuggestions.style.display = 'block';
+          
+          matches.forEach(match => {
+            const item = document.createElement('div');
+            item.className = 'character-suggestion-item';
+            item.textContent = match;
+            item.addEventListener('click', function() {
+              element.textContent = match;
+              hideCharacterSuggestions();
+              
+              // Move to dialogue after selecting character
+              currentElement = 'dialogue';
+              updateActiveButton();
+              insertNewElement('dialogue');
+            });
+            characterSuggestions.appendChild(item);
+          });
+        } else {
+          hideCharacterSuggestions();
+        }
+      }
+      
+      function hideCharacterSuggestions() {
+        characterSuggestions.style.display = 'none';
+      }
+      
+      // Transition dropdown functionality
+      function showTransitionDropdown(rect, element) {
+        transitionDropdown.style.top = `${rect.bottom}px`;
+        transitionDropdown.style.left = `${rect.left}px`;
+        transitionDropdown.style.display = 'block';
+        
+        const items = transitionDropdown.querySelectorAll('.transition-item');
+        items.forEach(item => {
+          item.onclick = function() {
+            element.textContent = this.dataset.text;
+            hideTransitionDropdown();
+          };
+        });
+        
+        // Add click outside listener
+        document.addEventListener('click', hideTransitionDropdownOnClickOutside);
+      }
+      
+      function hideTransitionDropdown() {
+        transitionDropdown.style.display = 'none';
+        document.removeEventListener('click', hideTransitionDropdownOnClickOutside);
+      }
+      
+      function hideTransitionDropdownOnClickOutside(e) {
+        if (!transitionDropdown.contains(e.target)) {
+          hideTransitionDropdown();
+        }
+      }
+      
+      // Handle save button
+      document.getElementById('save-btn').addEventListener('click', function() {
+        saveModalContainer.style.display = 'flex';
+      });
+      
+      // Handle save modal
+      document.getElementById('save-cancel').addEventListener('click', function() {
+        saveModalContainer.style.display = 'none';
+      });
+      
+      document.getElementById('save-confirm').addEventListener('click', function() {
+        const title = document.getElementById('script-title').value || 'Untitled Script';
+        saveScript(title);
+        saveModalContainer.style.display = 'none';
+      });
+      
+      // Handle load button
+      document.getElementById('load-btn').addEventListener('click', function() {
+        const savedScriptsList = document.getElementById('saved-scripts-list');
+        savedScriptsList.innerHTML = '';
+        
+        // Get saved scripts from localStorage
+        const savedScripts = getSavedScripts();
+        
+        if (Object.keys(savedScripts).length === 0) {
+          savedScriptsList.innerHTML = '<div style="padding: 10px;">No saved scripts found.</div>';
+        } else {
+          // Create list of saved scripts
+          for (const title in savedScripts) {
+            const scriptItem = document.createElement('div');
+            scriptItem.style.padding = '10px';
+            scriptItem.style.borderBottom = '1px solid rgba(255,255,255,0.1)';
+            scriptItem.style.cursor = 'pointer';
+            
+            const scriptDate = new Date(savedScripts[title].timestamp);
+            const dateStr = scriptDate.toLocaleDateString() + ' ' + scriptDate.toLocaleTimeString();
+            
+            scriptItem.innerHTML = `
+              <div>${title}</div>
+              <div style="font-size: 12px; opacity: 0.7;">${dateStr}</div>
+            `;
+            
+            scriptItem.addEventListener('click', function() {
+              // Highlight selected script
+              const allItems = savedScriptsList.querySelectorAll('div');
+              allItems.forEach(item => item.style.backgroundColor = 'transparent');
+              scriptItem.style.backgroundColor = 'rgba(255,255,255,0.1)';
+              
+              // Store selected title
+              savedScriptsList.dataset.selectedScript = title;
+            });
+            
+            savedScriptsList.appendChild(scriptItem);
+          }
+        }
+        
+        loadModalContainer.style.display = 'flex';
+      });
+      
+      // Handle load modal
+      document.getElementById('load-cancel').addEventListener('click', function() {
+        loadModalContainer.style.display = 'none';
+      });
+      
+      document.getElementById('load-confirm').addEventListener('click', function() {
+        const selectedScript = document.getElementById('saved-scripts-list').dataset.selectedScript;
+        if (selectedScript) {
+          loadScript(selectedScript);
+        }
+        loadModalContainer.style.display = 'none';
+      });
+      
+      // Handle export button
+      document.getElementById('export-btn').addEventListener('click', function() {
+        exportScript();
+      });
+      
+      // Handle theme toggle
+      document.getElementById('theme-toggle').addEventListener('click', function() {
+        document.body.classList.toggle('light');
+        this.textContent = document.body.classList.contains('light') ? 'DARK' : 'LIGHT';
+      });
+      
+      // Handle RTL toggle
+      document.getElementById('rtl-toggle').addEventListener('click', function() {
+        isRtlMode = !isRtlMode;
+        
+        if (isRtlMode) {
+          editor.classList.remove('ltr');
+          editor.classList.add('rtl');
+          this.textContent = 'ENGLISH';
+        } else {
+          editor.classList.remove('rtl');
+          editor.classList.add('ltr');
+          this.textContent = 'ARABIC';
+        }
+      });
+      
+      // Handle feedback button
+      document.getElementById('feedback-btn').addEventListener('click', function() {
+        feedbackBox.style.display = feedbackBox.style.display === 'none' || feedbackBox.style.display === '' ? 'block' : 'none';
+      });
+      
+      document.getElementById('send-feedback-btn').addEventListener('click', function() {
+        const feedback = document.getElementById('feedback-text').value;
+        if (feedback.trim()) {
+          sendFeedback(feedback);
+          document.getElementById('feedback-text').value = '';
+          feedbackBox.style.display = 'none';
+          showNotification('Feedback sent! Thank you.');
+        }
+      });
+      
+      // Handle share button
+      document.getElementById('share-btn').addEventListener('click', function() {
+        // Generate a share link
+        const shareLink = generateShareLink();
+        document.getElementById('share-link').value = shareLink;
+        shareModalContainer.style.display = 'flex';
+      });
+      
+      document.getElementById('share-cancel').addEventListener('click', function() {
+        shareModalContainer.style.display = 'none';
+      });
+      
+      document.getElementById('copy-link').addEventListener('click', function() {
+        const linkInput = document.getElementById('share-link');
+        linkInput.select();
+        document.execCommand('copy');
+        showNotification('Link copied to clipboard!');
+      });
+      
+      // Helper functions
+      function getClickedElement(target) {
+        if (target === editor) {
+          return null;
+        }
+        
+        if (target.classList.contains('element')) {
+          return target;
+        }
+        
+        const parent = target.closest('.element');
+        return parent;
+      }
+      
+      function updateActiveLine(element) {
+        // Remove active line class from all elements
+        const elements = editor.querySelectorAll('.element');
+        elements.forEach(el => el.classList.remove('active-line'));
+        
+        // Add active line class to current element
+        element.classList.add('active-line');
+      }
+      
+      function getElementTypeFromClass(element) {
+        const classes = element.className.split(' ');
+        const typeClasses = ['scene-heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'];
+        
+        for (const cls of classes) {
+          if (typeClasses.includes(cls)) {
+            return cls;
+          }
+        }
+        
+        return null;
+      }
+      
+      function removeElementTypeClasses(element) {
+        element.classList.remove('scene-heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition');
+      }
+      
+      function getNextElementType() {
+        const map = {
+          'scene-heading': 'action',
+          'action': 'character',
+          'character': 'dialogue',
+          'dialogue': 'action',
+          'parenthetical': 'dialogue',
+          'transition': 'scene-heading'
+        };
+        
+        return map[currentElement] || 'action';
+      }
+      
+      function cycleElementType() {
+        const types = ['scene-heading', 'action', 'character', 'parenthetical', 'dialogue', 'transition'];
+        const currentIndex = types.indexOf(currentElement);
+        const nextIndex = (currentIndex + 1) % types.length;
+        return types[nextIndex];
+      }
+      
+      function updateActiveButton() {
+        elementButtons.forEach(btn => {
+          btn.classList.remove('active');
+          if (btn.dataset.type === currentElement) {
+            btn.classList.add('active');
+          }
+        });
+      }
+      
+      function insertNewElement(type) {
+        const activeElement = document.querySelector('.active-line');
+        const newElement = document.createElement('div');
+        newElement.className = `element ${type}`;
+        newElement.id = `element-${Date.now()}`;
+        
+        if (activeElement) {
+          activeElement.classList.remove('active-line');
+          activeElement.after(newElement);
+        } else {
+          editor.appendChild(newElement);
+        }
+        
+        newElement.classList.add('active-line');
+        setFocusToEnd(newElement);
+        currentElement = type;
+        updateActiveButton();
+      }
+      
+      function setFocusToEnd(element) {
+        element.focus();
+        
+        // Create a text node if empty to position caret
+        if (!element.textContent) {
+          element.textContent = ' ';
+          
+          // Pre-fill based on element type
+          if (element.classList.contains('scene-heading')) {
+            element.textContent = 'INT. ';
+          } else if (element.classList.contains('parenthetical')) {
+            element.textContent = '(';
+          }
+        }
+        
+        // Set cursor at the end
+        const range = document.createRange();
+        const selection = window.getSelection();
+        range.selectNodeContents(element);
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+      
+      function getCharactersFromScript() {
+        const characters = new Set();
+        const characterElements = editor.querySelectorAll('.character');
+        
+        characterElements.forEach(el => {
+          const name = el.textContent.trim();
+          if (name) {
+            characters.add(name);
+          }
+        });
+        
+        return Array.from(characters);
+      }
+      
+      function saveScript(title) {
+        const scriptContent = editor.innerHTML;
+        const characters = getCharactersFromScript();
+        
+        // Get existing scripts
+        const savedScripts = getSavedScripts();
+        
+        // Add new script
+        savedScripts[title] = {
+          content: scriptContent,
+          characters: characters,
+          timestamp: Date.now()
+        };
+        
+        // Save to localStorage
+        localStorage.setItem('savedScripts', JSON.stringify(savedScripts));
+        showNotification('Script saved successfully!');
+      }
+      
+      function loadScript(title) {
+        const savedScripts = getSavedScripts();
+        if (savedScripts[title]) {
+          // Create a temporary div to sanitize the content
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = savedScripts[title].content;
+          
+          // Remove any script tags for security
+          const scripts = tempDiv.getElementsByTagName('script');
+          while (scripts[0]) {
+            scripts[0].parentNode.removeChild(scripts[0]);
           }
           
-          // Add a button to hide/show this display
-          const toggleButton = document.createElement('button');
-          toggleButton.textContent = 'Toggle HTML Display';
-          toggleButton.style.position = 'fixed';
-          toggleButton.style.top = '10px';
-          toggleButton.style.left = '10px';
-          toggleButton.style.zIndex = '10001';
-          
-          toggleButton.addEventListener('click', function() {
-            if (displayElement.style.display === 'none') {
-              displayElement.style.display = 'block';
-            } else {
-              displayElement.style.display = 'none';
+          // Remove on* attributes (event handlers)
+          const allElements = tempDiv.getElementsByTagName('*');
+          for (let i = 0; i < allElements.length; i++) {
+            const attributes = allElements[i].attributes;
+            for (let j = attributes.length - 1; j >= 0; j--) {
+              const attrName = attributes[j].name;
+              if (attrName.startsWith('on')) {
+                allElements[i].removeAttribute(attrName);
+              }
             }
-          });
+          }
           
-          document.body.appendChild(toggleButton);
-          document.body.appendChild(displayElement);
-        }, 2000);
-      });
-    </script>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-    <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
-    <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
-  </body>
+          editor.innerHTML = tempDiv.innerHTML;
+          showNotification('Script loaded successfully!');
+        }
+      }
+      
+      function getSavedScripts() {
+        const scripts = localStorage.getItem('savedScripts');
+        return scripts ? JSON.parse(scripts) : {};
+      }
+      
+      function exportScript() {
+        // Format the script for export
+        let exportText = '';
+        const elements = editor.querySelectorAll('.element');
+        
+        elements.forEach(el => {
+          const type = getElementTypeFromClass(el);
+          const text = el.textContent.trim();
+          
+          if (!text) return;
+          
+          switch(type) {
+            case 'scene-heading':
+              exportText += text + '\n\n';
+              break;
+            case 'action':
+              exportText += text + '\n\n';
+              break;
+            case 'character':
+              exportText += '                    ' + text + '\n';
+              break;
+            case 'parenthetical':
+              exportText += '                    ' + text + '\n';
+              break;
+            case 'dialogue':
+              exportText += '          ' + text + '\n\n';
+              break;
+            case 'transition':
+              exportText += '                                    ' + text + '\n\n';
+              break;
+          }
+        });
+        
+        // Create a downloadable file
+        const blob = new Blob([exportText], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'screenplay.txt';
+        a.click();
+        
+        showNotification('Script exported successfully!');
+      }
+      
+      function sendFeedback(feedback) {
+        // In a real app, this would send to a server
+        console.log('Feedback:', feedback);
+        // For now, just store in localStorage
+        const feedbackList = JSON.parse(localStorage.getItem('feedback') || '[]');
+        feedbackList.push({
+          text: feedback,
+          timestamp: Date.now()
+        });
+        localStorage.setItem('feedback', JSON.stringify(feedbackList));
+      }
+      
+      function generateShareLink() {
+        // In a real app, this would generate a server-side link
+        // For demo purposes, encode the script content in base64
+        const scriptContent = editor.innerHTML;
+        const encodedContent = btoa(scriptContent);
+        const shareId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+        
+        // Store in localStorage for demo
+        const sharedScripts = JSON.parse(localStorage.getItem('sharedScripts') || '{}');
+        sharedScripts[shareId] = {
+          content: scriptContent,
+          timestamp: Date.now()
+        };
+        localStorage.setItem('sharedScripts', JSON.stringify(sharedScripts));
+        
+        return `${window.location.origin}?share=${shareId}`;
+      }
+      
+      function showNotification(message) {
+        notification.textContent = message;
+        notification.style.display = 'block';
+        setTimeout(() => {
+          notification.style.display = 'none';
+        }, 3000);
+      }
+      
+      // Check for shared script in URL
+      function checkForSharedScript() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const shareId = urlParams.get('share');
+        
+        if (shareId) {
+          // In a real app, this would fetch from server
+          const sharedScripts = JSON.parse(localStorage.getItem('sharedScripts') || '{}');
+          if (sharedScripts[shareId]) {
+            // Create a temporary div to sanitize the content
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = sharedScripts[shareId].content;
+            
+            // Remove any script tags for security
+            const scripts = tempDiv.getElementsByTagName('script');
+            while (scripts[0]) {
+              scripts[0].parentNode.removeChild(scripts[0]);
+            }
+            
+            // Remove on* attributes (event handlers)
+            const allElements = tempDiv.getElementsByTagName('*');
+            for (let i = 0; i < allElements.length; i++) {
+              const attributes = allElements[i].attributes;
+              for (let j = attributes.length - 1; j >= 0; j--) {
+                const attrName = attributes[j].name;
+                if (attrName.startsWith('on')) {
+                  allElements[i].removeAttribute(attrName);
+                }
+              }
+            }
+            
+            editor.innerHTML = tempDiv.innerHTML;
+            showNotification('Shared script loaded successfully!');
+          }
+        }
+      }
+      
+      // Initialize the app
+      checkForSharedScript();
+    });
+  </script>
+</body>
 </html>
