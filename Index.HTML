@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fade Out - Screenplay Editor</title>
+  <title>Fade Out - Screenplay Editor (Enhanced)</title>
   <style>
     /* Dark Theme & Typography */
     body {
       background-color: #1c0f2e;
       color: white;
-      font-family: 'Courier New', monospace;
+      font-family: Courier, monospace;
       margin: 0;
       padding: 0;
     }
@@ -58,6 +58,13 @@
       justify-content: space-between;
       flex-wrap: wrap;
       z-index: 999;
+      gap: 5px;
+    }
+
+    /* Toolbar Groups */
+    .toolbar-group {
+      display: flex;
+      flex-wrap: wrap;
       gap: 5px;
     }
 
@@ -318,48 +325,6 @@
     body.light .transition-item:hover {
       background-color: #ddd;
     }
-
-    /* Selected script styling */
-    .saved-script-item.selected {
-      background-color: rgba(255, 215, 0, 0.2);
-    }
-    
-    /* Format Modal Styling */
-    .format-option {
-      margin-bottom: 15px;
-      padding: 15px;
-      border: 1px solid gold;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-    
-    .format-option:hover {
-      background-color: rgba(255, 215, 0, 0.1);
-    }
-    
-    body.light .format-option {
-      border-color: #000000;
-    }
-    
-    body.light .format-option:hover {
-      background-color: rgba(0, 0, 0, 0.05);
-    }
-    
-    .format-option h3 {
-      margin-top: 0;
-      color: gold;
-    }
-    
-    body.light .format-option h3 {
-      color: #000000;
-    }
-    
-    .format-option p {
-      margin-bottom: 0;
-      font-size: 14px;
-      opacity: 0.8;
-    }
   </style>
 </head>
 <body class="dark-mode">
@@ -463,1780 +428,816 @@
       </div>
     </div>
   </div>
-  
-  <!-- Format Options Modal (dynamic) -->
 
   <script>
-    // Arabic translations
-    const arabicLabels = {
-      'SCENE HEADING': 'العنوان الرئيسي',
-      'ACTION': 'الفعل',
-      'CHARACTER': 'الشخصية',
-      'DIALOGUE': 'الحوار',
-      'PARENTHETICAL': 'توضيح',
-      'TRANSITION': 'الانتقال',
-      'SAVE': 'حفظ',
-      'LOAD': 'تحميل',
-      'EXPORT': 'تصدير',
-      'FEEDBACK': 'تعليق',
-      'ARABIC': 'English',
-      'ENGLISH': 'عربي',
-      'LIGHT': 'مضيء',
-      'DARK': 'مظلم',
-      'SHARE': 'مشاركة'
-    };
+// Arabic translations
+const arabicLabels = {
+  'SCENE HEADING': 'العنوان الرئيسي',
+  'ACTION': 'الفعل',
+  'CHARACTER': 'الشخصية',
+  'DIALOGUE': 'الحوار',
+  'PARENTHETICAL': 'توضيح',
+  'TRANSITION': 'الانتقال',
+  'SAVE': 'حفظ',
+  'LOAD': 'تحميل',
+  'EXPORT': 'تصدير',
+  'FEEDBACK': 'تعليق',
+  'ARABIC': 'English',
+  'ENGLISH': 'عربي',
+  'LIGHT': 'مضيء',
+  'DARK': 'مظلم'
+};
 
-    // Global state
-    let currentElement = 'scene-heading';
-    let isRtlMode = false;
-    let scriptCharacters = new Set(['ALEX', 'BARISTA']);
-    let commonTransitions = [
-      'CUT TO:',
-      'FADE IN:',
-      'FADE OUT:',
-      'FADE TO BLACK',
-      'DISSOLVE TO:',
-      'SMASH CUT TO:',
-      'JUMP CUT TO:',
-      'MATCH CUT TO:',
-      'IRIS IN:',
-      'IRIS OUT:',
-      'WIPE TO:',
-      'CROSSFADE:',
-      'FLASH CUT TO:',
-      'INTERCUT WITH:',
-      'FREEZE FRAME.',
-      'THE END'
-    ];
+// Global state
+let currentElement = 'scene-heading';
+let isRtlMode = false;
+let scriptCharacters = new Set(['ALEX', 'BARISTA']);
+let commonTransitions = [
+  'CUT TO:',
+  'FADE IN:',
+  'FADE OUT:',
+  'FADE TO BLACK',
+  'DISSOLVE TO:',
+  'SMASH CUT TO:',
+  'JUMP CUT TO:',
+  'MATCH CUT TO:',
+  'IRIS IN:',
+  'IRIS OUT:',
+  'WIPE TO:',
+  'CROSSFADE:',
+  'FLASH CUT TO:',
+  'INTERCUT WITH:',
+  'FREEZE FRAME.',
+  'THE END'
+];
 
-    // DOM references
-    let editor, notification;
+// DOM references
+let editor, notification;
 
-    // Initialize the editor
-    document.addEventListener('DOMContentLoaded', function() {
-      // Get DOM elements
-      editor = document.getElementById('editor');
-      notification = document.getElementById('notification');
+// Initialize the editor
+document.addEventListener('DOMContentLoaded', function() {
+  // Get DOM elements
+  editor = document.getElementById('editor');
+  notification = document.getElementById('notification');
+  
+  // Set up event listeners
+  setupListeners();
+  
+  // Extract characters from existing content
+  extractCharacters();
+  
+  // Place cursor at the beginning
+  const sceneHeading = document.querySelector('.scene-heading');
+  if (sceneHeading) setCaretToEnd(sceneHeading);
+});
+
+function setupListeners() {
+  // Element type buttons
+  document.querySelectorAll('.element-button').forEach(btn => {
+    btn.addEventListener('click', function() {
+      // Set active element type
+      currentElement = this.dataset.type;
       
-      // Set up event listeners
-      setupListeners();
+      // Update active button styling
+      document.querySelectorAll('.element-button').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
       
-      // Extract characters from existing content
-      extractCharacters();
-      
-      // Find active element
-      const activeElement = document.querySelector('.element');
-      if (activeElement) {
-        makeElementActive(activeElement);
-      }
+      // Insert new element
+      addNewElement(currentElement);
     });
-
-    function setupListeners() {
-      // Element type buttons
-      document.querySelectorAll('.element-button').forEach(btn => {
-        btn.addEventListener('click', function() {
-          // Set active element type
-          currentElement = this.dataset.type;
-          
-          // Update active button styling
-          document.querySelectorAll('.element-button').forEach(b => b.classList.remove('active'));
-          this.classList.add('active');
-          
-          // Insert new element
-          addNewElement(currentElement);
-        });
-      });
-      
-      // Action buttons
-      document.getElementById('save-btn').addEventListener('click', showSaveOptions);
-      document.getElementById('load-btn').addEventListener('click', showLoadOptions);
-      document.getElementById('export-btn').addEventListener('click', showExportOptions);
-      document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-      document.getElementById('rtl-toggle').addEventListener('click', toggleDirection);
-      document.getElementById('feedback-btn').addEventListener('click', toggleFeedback);
-      document.getElementById('share-btn').addEventListener('click', shareScript);
-      
-      // Modal buttons
-      document.getElementById('save-cancel')?.addEventListener('click', () => {
-        document.getElementById('save-modal-container').style.display = 'none';
-      });
-      document.getElementById('save-confirm')?.addEventListener('click', () => {
-        const title = document.getElementById('script-title').value.trim() || 'Untitled Script';
-        const content = editor.innerHTML;
-        
-        // Save to localStorage
-        const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
-        scripts[title] = {
-          content,
-          characters: Array.from(scriptCharacters),
-          timestamp: Date.now()
-        };
-        localStorage.setItem('scripts', JSON.stringify(scripts));
-        
-        // Hide modal and show notification
-        document.getElementById('save-modal-container').style.display = 'none';
-        showNotification(`Script "${title}" saved successfully`);
-      });
-      
-      document.getElementById('load-cancel')?.addEventListener('click', () => {
-        document.getElementById('load-modal-container').style.display = 'none';
-      });
-      document.getElementById('load-confirm')?.addEventListener('click', () => {
-        const selected = document.querySelector('.saved-script-item.selected');
-        if (!selected) {
-          showNotification('Please select a script to load');
-          return;
-        }
-        
-        const scriptName = selected.getAttribute('data-name');
-        const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
-        
-        if (scripts[scriptName]) {
-          // Create a temporary div to safely parse the content
-          const tempDiv = document.createElement('div');
-          // Use DOMParser instead of innerHTML for safer parsing
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(scripts[scriptName].content, 'text/html');
-          tempDiv.append(...doc.body.childNodes);
-          
-          // Only copy the elements we expect in our screenplay editor
-          const safeContent = document.createDocumentFragment();
-          tempDiv.querySelectorAll('.element').forEach(element => {
-            // Only copy expected attributes to prevent script injection
-            const safeElement = document.createElement('div');
-            safeElement.className = element.className;
-            safeElement.id = element.id;
-            safeElement.textContent = element.textContent; // Use textContent instead of innerHTML
-            
-            if (isRtlMode) {
-              safeElement.setAttribute('dir', 'rtl');
-              safeElement.setAttribute('lang', 'ar');
-            }
-            
-            safeContent.appendChild(safeElement);
-          });
-          
-          // Clear the editor and append the sanitized content
-          editor.innerHTML = '';
-          editor.appendChild(safeContent);
-          
-          // Restore characters
-          if (scripts[scriptName].characters) {
-            scriptCharacters = new Set(scripts[scriptName].characters);
-          }
-          
-          document.getElementById('load-modal-container').style.display = 'none';
-          showNotification(`Script "${scriptName}" loaded successfully`);
-        }
-      });
-      
-      document.getElementById('share-cancel')?.addEventListener('click', () => {
-        document.getElementById('share-modal-container').style.display = 'none';
-      });
-      document.getElementById('copy-link')?.addEventListener('click', () => {
-        const link = document.getElementById('share-link');
-        link.select();
-        document.execCommand('copy');
-        showNotification('Link copied to clipboard');
-      });
-      
-      document.getElementById('send-feedback-btn')?.addEventListener('click', () => {
-        const feedbackText = document.getElementById('feedback-text')?.value.trim();
-        if (!feedbackText) {
-          showNotification('Please enter your feedback');
-          return;
-        }
-        
-        // In a real app, this would send feedback to a server
-        showNotification('Thank you for your feedback!');
-        if (document.getElementById('feedback-text')) {
-          document.getElementById('feedback-text').value = '';
-        }
-        document.getElementById('feedback-box').style.display = 'none';
-      });
-      
-      // Editor events
-      if (editor) {
-        // Handle Enter key to add new elements
-        editor.addEventListener('keydown', function(e) {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            handleEnterKey();
-          } else if (e.key === 'Tab') {
-            e.preventDefault();
-            cycleElementType();
-          }
-        });
-        
-        // Handle clicks to set active element
-        editor.addEventListener('click', function(e) {
-          const target = e.target;
-          if (target === editor) return;
-          
-          // Find closest screenplay element
-          let element = target;
-          while (element && element !== editor && !element.classList.contains('element')) {
-            element = element.parentNode;
-          }
-          
-          if (element && element !== editor) {
-            makeElementActive(element);
-          }
-        });
-
-        // Handle input event for character autocomplete
-        editor.addEventListener('input', function(e) {
-          const target = e.target;
-          if (target === editor) return;
-          
-          // Find closest screenplay element
-          let element = target;
-          while (element && element !== editor && !element.classList.contains('element')) {
-            element = element.parentNode;
-          }
-          
-          if (element && element !== editor) {
-            const elementClass = element.className.split(' ')[1];
-            
-            // Auto-uppercase for scene heading, character, and transition
-            if (elementClass === 'scene-heading' || elementClass === 'character' || elementClass === 'transition') {
-              const selection = window.getSelection();
-              if (!selection || selection.rangeCount === 0) return;
-              
-              const range = selection.getRangeAt(0);
-              const cursorPosition = range.startOffset;
-              
-              // Store the current text and cursor position
-              const originalText = element.textContent || '';
-              
-              // Update to uppercase
-              element.textContent = originalText.toUpperCase();
-              
-              // Restore cursor position
-              setCaretPosition(element, cursorPosition);
-            }
-            
-            // Show character suggestions
-            if (elementClass === 'character') {
-              const text = element.textContent?.trim().toUpperCase() || '';
-              if (text.length > 0) {
-                showCharacterSuggestions(text, element);
-              } else {
-                hideCharacterSuggestions();
-              }
-            }
-          }
-        });
-      }
-      
-      // Close dropdowns and suggestions when clicking outside
-      document.addEventListener('click', function(e) {
-        if (!e.target.closest('#character-suggestions') && !e.target.closest('.character')) {
-          hideCharacterSuggestions();
-        }
-        
-        if (!e.target.closest('#transition-dropdown') && !e.target.closest('.transition')) {
-          hideTransitionDropdown();
-        }
-      });
-      
-      // Set up transition dropdown items
-      document.querySelectorAll('.transition-item').forEach(item => {
-        item.addEventListener('click', function() {
-          const activeElement = document.querySelector('.active-line');
-          if (activeElement && activeElement.classList.contains('transition')) {
-            activeElement.textContent = this.dataset.text;
-            hideTransitionDropdown();
-          }
-        });
-      });
-    }
-
-    // Make an element the active one
-    function makeElementActive(element) {
-      // Remove active class from all elements
-      document.querySelectorAll('.element').forEach(el => {
-        el.classList.remove('active-line');
-      });
-      
-      // Add active class to clicked element
-      element.classList.add('active-line');
-      
-      // Update current element type based on element class
-      const elementClasses = element.className.split(' ');
-      for (const cls of elementClasses) {
-        if (['scene-heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(cls)) {
-          currentElement = cls;
-          break;
-        }
-      }
-      
-      // Update active button in toolbar
-      updateActiveButton();
-      
-      // If it's a transition element, set up the dropdown on click
-      if (element.classList.contains('transition')) {
-        element.addEventListener('click', function() {
-          showTransitionDropdown(this);
-        });
-      }
-    }
-
-    // Add a new screenplay element
-    function addNewElement(type, text = '') {
-      if (!editor) return;
-      
-      // Create new element
-      const div = document.createElement('div');
-      div.className = `element ${type}`;
-      div.id = `element-${Date.now()}`;
-      
-      // Set RTL direction if needed
-      if (isRtlMode) {
-        div.setAttribute('dir', 'rtl');
-        div.setAttribute('lang', 'ar');
-      }
-      
-      // Default content for specific types
-      if (type === 'scene-heading' && !text) {
-        div.textContent = isRtlMode ? '.INT ' : 'INT. ';
-      } else if (type === 'parenthetical' && !text) {
-        div.textContent = '()';
-      } else if (text) {
-        div.textContent = text;
-      } else {
-        div.innerHTML = '&nbsp;';
-      }
-      
-      // Find active element
-      const activeElement = document.querySelector('.active-line');
-      
-      // Remove active line from all elements
-      document.querySelectorAll('.element').forEach(el => {
-        el.classList.remove('active-line');
-      });
-      
-      // Add active line to new element
-      div.classList.add('active-line');
-      
-      // Insert after active element or append to editor
-      if (activeElement) {
-        activeElement.after(div);
-      } else {
-        editor.appendChild(div);
-      }
-      
-      // Set cursor position
-      setCaretToEnd(div);
-      
-      // If it's a transition element, set up the dropdown on click
-      if (type === 'transition') {
-        div.addEventListener('click', function() {
-          showTransitionDropdown(this);
-        });
-      }
-      
-      // Update current element
-      currentElement = type;
-      
-      // Update active button
-      updateActiveButton();
-      
-      return div;
-    }
-
-    // Handle Enter key presses
-    function handleEnterKey() {
-      const activeElement = document.querySelector('.active-line');
-      if (!activeElement) return;
-      
-      // Get current type from class
-      let type = null;
-      const classes = activeElement.className.split(' ');
-      for (const cls of classes) {
-        if (['scene-heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(cls)) {
-          type = cls;
-          break;
-        }
-      }
-      
-      if (!type) return;
-      
-      // Determine next type based on screenplay format rules
-      let nextType = 'action'; // Default
-      
-      if (type === 'scene-heading') nextType = 'action';
-      else if (type === 'action') nextType = 'action';
-      else if (type === 'character') {
-        const text = activeElement.textContent.trim();
-        if (text) {
-          nextType = 'dialogue';
-          // Add character to our list
-          scriptCharacters.add(text);
-        } else {
-          nextType = 'character';
-        }
-      }
-      else if (type === 'dialogue') nextType = 'character';
-      else if (type === 'parenthetical') nextType = 'dialogue';
-      else if (type === 'transition') {
-        // Always create a scene heading after a transition
-        nextType = 'scene-heading';
-      }
-      
-      // Create new element
-      addNewElement(nextType);
-      
-      // Update current element type
-      currentElement = nextType;
-      
-      // Update button styles
-      updateActiveButton();
-    }
-
-    // Cycle through element types with Tab key
-    function cycleElementType() {
-      const activeElement = document.querySelector('.active-line');
-      if (!activeElement) return;
-      
-      // Get current type from class
-      let type = null;
-      const classes = activeElement.className.split(' ');
-      for (const cls of classes) {
-        if (['scene-heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(cls)) {
-          type = cls;
-          break;
-        }
-      }
-      
-      if (!type) return;
-      
-      // Determine next type
-      let nextType = 'action';
-      
-      if (type === 'scene-heading') nextType = 'action';
-      else if (type === 'action') nextType = 'character';
-      else if (type === 'character') nextType = 'parenthetical';
-      else if (type === 'parenthetical') nextType = 'dialogue';
-      else if (type === 'dialogue') nextType = 'character';
-      else if (type === 'transition') nextType = 'scene-heading';
-      
-      // Remove old type class
-      activeElement.classList.remove(type);
-      
-      // Add new type class
-      activeElement.classList.add(nextType);
-      
-      // Special formatting for specific types
-      if (nextType === 'scene-heading' && (activeElement.textContent.trim() === '' || activeElement.textContent === '\u00A0')) {
-        activeElement.textContent = isRtlMode ? '.INT ' : 'INT. ';
-      } else if (nextType === 'parenthetical' && (activeElement.textContent.trim() === '' || activeElement.textContent === '\u00A0')) {
-        activeElement.textContent = '()';
-      }
-      
-      // Update current element type
-      currentElement = nextType;
-      
-      // Update button styles
-      updateActiveButton();
-      
-      // Set focus to the element
-      setCaretToEnd(activeElement);
-    }
-
-    // Update active button in toolbar
-    function updateActiveButton() {
-      document.querySelectorAll('.element-button').forEach(btn => {
-        btn.classList.remove('active');
-      });
-      
-      const activeButton = document.querySelector(`.element-button[data-type="${currentElement}"]`);
-      if (activeButton) {
-        activeButton.classList.add('active');
-      }
-    }
-
-    // Place cursor at the end of an element
-    function setCaretToEnd(el) {
-      if (!el) return;
-      
-      el.focus();
-      const range = document.createRange();
-      if (el.firstChild) {
-        range.setStart(el.firstChild, el.firstChild.textContent.length);
-      } else {
-        range.setStart(el, 0);
-      }
-      range.collapse(true);
-      const selection = window.getSelection();
-      selection.removeAllRanges();
-      selection.addRange(range);
+  });
+  
+  // Action buttons
+  document.getElementById('save-btn')?.addEventListener('click', saveScript);
+  document.getElementById('load-btn')?.addEventListener('click', loadScript);
+  document.getElementById('export-btn')?.addEventListener('click', exportScript);
+  document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
+  document.getElementById('rtl-toggle')?.addEventListener('click', toggleDirection);
+  document.getElementById('feedback-btn')?.addEventListener('click', toggleFeedback);
+  document.getElementById('share-btn')?.addEventListener('click', shareScript);
+  
+  // Modal buttons
+  document.getElementById('save-cancel')?.addEventListener('click', () => {
+    document.getElementById('save-modal-container').style.display = 'none';
+  });
+  document.getElementById('save-confirm')?.addEventListener('click', () => {
+    const title = document.getElementById('script-title').value.trim() || 'Untitled Script';
+    const content = editor.innerHTML;
+    
+    // Save to localStorage
+    const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+    scripts[title] = {
+      content,
+      characters: Array.from(scriptCharacters),
+      timestamp: Date.now()
+    };
+    localStorage.setItem('scripts', JSON.stringify(scripts));
+    
+    // Hide modal and show notification
+    document.getElementById('save-modal-container').style.display = 'none';
+    showNotification(\`Script "\${title}" saved successfully\`);
+  });
+  
+  document.getElementById('load-cancel')?.addEventListener('click', () => {
+    document.getElementById('load-modal-container').style.display = 'none';
+  });
+  document.getElementById('load-confirm')?.addEventListener('click', () => {
+    const selected = document.querySelector('.saved-script-item.selected');
+    if (!selected) {
+      showNotification('Please select a script to load');
+      return;
     }
     
-    // Set caret position within an element
-    function setCaretPosition(element, position) {
-      if (!element) return;
+    const scriptName = selected.getAttribute('data-name');
+    const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+    
+    if (scripts[scriptName]) {
+      // Create a temporary div to safely parse the content
+      const tempDiv = document.createElement('div');
+      // Use DOMParser instead of innerHTML for safer parsing
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(scripts[scriptName].content, 'text/html');
+      tempDiv.append(...doc.body.childNodes);
       
-      // Make sure element has content
-      if (!element.firstChild) {
-        element.textContent = ' ';
+      // Only copy the elements we expect in our screenplay editor
+      const safeContent = document.createDocumentFragment();
+      tempDiv.querySelectorAll('.element').forEach(element => {
+        // Only copy expected attributes to prevent script injection
+        const safeElement = document.createElement('div');
+        safeElement.className = element.className;
+        safeElement.dataset.type = element.dataset.type;
+        safeElement.contentEditable = 'true';
+        safeElement.textContent = element.textContent; // Use textContent instead of innerHTML
+        safeElement.style.textAlign = element.style.textAlign;
+        
+        if (isRtlMode) {
+          safeElement.setAttribute('dir', 'rtl');
+          safeElement.setAttribute('lang', 'ar');
+        }
+        
+        safeContent.appendChild(safeElement);
+      });
+      
+      // Clear the editor and append the sanitized content
+      editor.innerHTML = '';
+      editor.appendChild(safeContent);
+      
+      // Restore characters
+      if (scripts[scriptName].characters) {
+        scriptCharacters = new Set(scripts[scriptName].characters);
       }
       
-      const range = document.createRange();
-      const selection = window.getSelection();
-      
-      // Ensure position is valid
-      const maxLength = element.firstChild.textContent.length;
-      position = Math.min(Math.max(0, position), maxLength);
-      
-      range.setStart(element.firstChild, position);
-      range.collapse(true);
-      
-      selection.removeAllRanges();
-      selection.addRange(range);
+      document.getElementById('load-modal-container').style.display = 'none';
+      showNotification(\`Script "\${scriptName}" loaded successfully\`);
     }
-
-    // Extract character names from elements
-    function extractCharacters() {
-      if (!editor) return;
-      
-      const characterElements = editor.querySelectorAll('.character');
-      characterElements.forEach(el => {
-        const character = el.textContent?.trim();
-        if (character) {
-          scriptCharacters.add(character);
-        }
-      });
+  });
+  
+  document.getElementById('share-cancel')?.addEventListener('click', () => {
+    document.getElementById('share-modal-container').style.display = 'none';
+  });
+  document.getElementById('copy-link')?.addEventListener('click', () => {
+    const link = document.getElementById('share-link');
+    link.select();
+    document.execCommand('copy');
+    showNotification('Link copied to clipboard');
+  });
+  
+  document.getElementById('send-feedback-btn')?.addEventListener('click', () => {
+    const feedbackText = document.getElementById('feedback-text')?.value.trim();
+    if (!feedbackText) {
+      showNotification('Please enter your feedback');
+      return;
     }
+    
+    // In a real app, this would send feedback to a server
+    showNotification('Thank you for your feedback!');
+    if (document.getElementById('feedback-text')) {
+      document.getElementById('feedback-text').value = '';
+    }
+    document.getElementById('feedback-box').style.display = 'none';
+  });
+  
+  // Editor events
+  if (editor) {
+    // Handle Enter key to add new elements
+    editor.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleEnterKey();
+      } else if (e.key === 'Tab') {
+        e.preventDefault();
+        cycleElementType();
+      }
+    });
+    
+    // Handle clicks to set active element
+    editor.addEventListener('click', function(e) {
+      const target = e.target;
+      if (target === editor) return;
+      
+      // Find closest screenplay element
+      let element = target;
+      while (element && element !== editor && !element.classList.contains('element')) {
+        element = element.parentNode;
+      }
+      
+      if (element && element !== editor) {
+        // Set active line
+        const elements = document.querySelectorAll('#editor .element');
+        elements.forEach(el => el.classList.remove('active-line'));
+        element.classList.add('active-line');
+        
+        // Update current element type
+        currentElement = element.dataset.type;
+        
+        // Update button styles
+        updateActiveButton();
+      }
+    });
+  }
+}
 
-    // Show character suggestions dropdown
-    function showCharacterSuggestions(text, element) {
-      if (!text) return;
-      
-      const characterSuggestions = document.getElementById('character-suggestions');
-      if (!characterSuggestions) return;
-      
-      // Get matching characters
-      const matches = Array.from(scriptCharacters).filter(char => 
-        char.includes(text) && char !== text
-      );
-      
-      if (matches.length > 0) {
-        // Clear previous suggestions
-        characterSuggestions.innerHTML = '';
-        
-        // Position the dropdown
-        const rect = element.getBoundingClientRect();
-        characterSuggestions.style.top = `${rect.bottom + window.scrollY}px`;
-        characterSuggestions.style.left = `${rect.left + window.scrollX}px`;
-        characterSuggestions.style.display = 'block';
-        
-        // Add suggestion items
-        matches.forEach(char => {
-          const item = document.createElement('div');
-          item.className = 'character-suggestion-item';
-          item.textContent = char;
-          item.addEventListener('click', () => {
-            element.textContent = char;
-            hideCharacterSuggestions();
-            
-            // After selecting a character, create a dialogue element
-            const nextElement = document.querySelector('.element.dialogue');
-            if (!nextElement) {
-              addNewElement('dialogue');
-            } else {
-              makeElementActive(nextElement);
-            }
-          });
-          characterSuggestions.appendChild(item);
-        });
+// Add a new screenplay element
+function addNewElement(type, text = '') {
+  if (!editor) return;
+  
+  // Create new element
+  const div = document.createElement('div');
+  div.className = \`element \${type}\`;
+  div.id = \`element-\${Date.now()}\`;
+  
+  // Set RTL direction if needed
+  if (isRtlMode) {
+    div.setAttribute('dir', 'rtl');
+    div.setAttribute('lang', 'ar');
+    
+    // Set proper alignment
+    if (type === 'scene-heading' || type === 'action') {
+      div.style.textAlign = 'right';
+    } else if (type === 'transition') {
+      div.style.textAlign = 'left';
+    }
+  } else {
+    if (type === 'transition') {
+      div.style.textAlign = 'right';
+    }
+  }
+  
+  // Default content for specific types
+  if (type === 'scene-heading' && !text) {
+    div.textContent = isRtlMode ? '.INT ' : 'INT. ';
+  } else if (type === 'parenthetical' && !text) {
+    div.textContent = '()';
+  } else if (text) {
+    div.textContent = text;
+  } else {
+    div.innerHTML = '&nbsp;';
+  }
+  
+  // Remove active line from other elements
+  const activeElement = document.querySelector('.active-line');
+  if (activeElement) {
+    activeElement.classList.remove('active-line');
+    activeElement.after(div);
+  } else {
+    editor.appendChild(div);
+  }
+  
+  // Add active line to new element
+  div.classList.add('active-line');
+  
+  // Set cursor position
+  setCaretToEnd(div);
+  
+  // Add input handler for character elements to show suggestions
+  if (type === 'character') {
+    div.addEventListener('input', function() {
+      const text = this.textContent?.trim().toUpperCase() || '';
+      if (text.length > 0) {
+        showCharacterSuggestions(text, this);
       } else {
         hideCharacterSuggestions();
       }
-    }
+    });
+  }
+  
+  // Add transition dropdown toggle for transition elements
+  if (type === 'transition') {
+    div.addEventListener('click', function(e) {
+      showTransitionDropdown(this);
+    });
+  }
+}
 
-    // Hide character suggestions
-    function hideCharacterSuggestions() {
-      const characterSuggestions = document.getElementById('character-suggestions');
-      if (characterSuggestions) {
-        characterSuggestions.style.display = 'none';
-      }
+// Handle Enter key presses
+function handleEnterKey() {
+  const activeElement = document.querySelector('.active-line');
+  if (!activeElement) return;
+  
+  // Get current type
+  const type = activeElement.dataset.type;
+  
+  // Determine next type based on screenplay format rules
+  let nextType = 'action'; // Default
+  
+  if (type === 'scene-heading') nextType = 'action';
+  else if (type === 'action') nextType = 'action';
+  else if (type === 'character') {
+    const text = activeElement.textContent.trim();
+    if (text) {
+      nextType = 'dialogue';
+      // Add character to our list
+      scriptCharacters.add(text);
+    } else {
+      nextType = 'character';
     }
+  }
+  else if (type === 'dialogue') nextType = 'character';
+  else if (type === 'parenthetical') nextType = 'dialogue';
+  else if (type === 'transition') {
+    // Always create a scene heading after a transition
+    nextType = 'scene-heading';
+  }
+  
+  // Create new element
+  addNewElement(nextType);
+  
+  // Update current element type
+  currentElement = nextType;
+  
+  // Update button styles
+  updateActiveButton();
+}
 
-    // Show transition dropdown
-    function showTransitionDropdown(element) {
-      const dropdown = document.getElementById('transition-dropdown');
-      if (!dropdown) return;
-      
-      const rect = element.getBoundingClientRect();
-      dropdown.style.top = `${rect.bottom + window.scrollY}px`;
-      dropdown.style.left = `${rect.left + window.scrollX}px`;
-      dropdown.style.display = 'block';
+// Cycle through element types with Tab key
+function cycleElementType() {
+  const activeElement = document.querySelector('.active-line');
+  if (!activeElement) return;
+  
+  // Determine next type
+  const type = activeElement.dataset.type;
+  let nextType = 'action';
+  
+  if (type === 'scene-heading') nextType = 'action';
+  else if (type === 'action') nextType = 'character';
+  else if (type === 'character') nextType = 'parenthetical';
+  else if (type === 'parenthetical') nextType = 'dialogue';
+  else if (type === 'dialogue') nextType = 'character';
+  else if (type === 'transition') nextType = 'scene-heading';
+  
+  // Update element class and dataset
+  activeElement.classList.remove(type);
+  activeElement.classList.add(nextType);
+  activeElement.dataset.type = nextType;
+  
+  // Special formatting for specific types
+  if (nextType === 'scene-heading' && (activeElement.textContent.trim() === '' || activeElement.textContent === '\\u00A0')) {
+    activeElement.textContent = isRtlMode ? '.INT ' : 'INT. ';
+  } else if (nextType === 'parenthetical' && (activeElement.textContent.trim() === '' || activeElement.textContent === '\\u00A0')) {
+    activeElement.textContent = '()';
+  }
+  
+  // Update RTL settings
+  if (isRtlMode) {
+    if (nextType === 'scene-heading' || nextType === 'action') {
+      activeElement.style.textAlign = 'right';
+    } else if (nextType === 'transition') {
+      activeElement.style.textAlign = 'left';
+    } else {
+      activeElement.style.textAlign = '';
     }
+  } else {
+    if (nextType === 'transition') {
+      activeElement.style.textAlign = 'right';
+    } else {
+      activeElement.style.textAlign = '';
+    }
+  }
+  
+  // Update current element type
+  currentElement = nextType;
+  
+  // Update button styles
+  updateActiveButton();
+}
 
-    // Hide transition dropdown
-    function hideTransitionDropdown() {
-      const dropdown = document.getElementById('transition-dropdown');
-      if (dropdown) {
-        dropdown.style.display = 'none';
-      }
-    }
+// Update active button in toolbar
+function updateActiveButton() {
+  document.querySelectorAll('.element-button').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  
+  const activeButton = document.querySelector(\`.element-button[data-type="\${currentElement}"]\`);
+  if (activeButton) {
+    activeButton.classList.add('active');
+  }
+}
 
-    // Show save options
-    function showSaveOptions() {
-      // Create modal for save options
-      const modal = document.createElement('div');
-      modal.className = 'modal-container';
-      modal.style.display = 'flex';
-      
-      const modalContent = document.createElement('div');
-      modalContent.className = 'modal';
-      
-      const title = document.createElement('h2');
-      title.textContent = 'Save Script';
-      
-      const subtitle = document.createElement('p');
-      subtitle.textContent = 'Choose save format:';
-      
-      // Create options
-      const optionsContainer = document.createElement('div');
-      
-      // Option 1: Save to Browser
-      const browserOption = document.createElement('div');
-      browserOption.className = 'format-option';
-      const browserTitle = document.createElement('h3');
-      browserTitle.textContent = 'Save to Browser';
-      const browserDesc = document.createElement('p');
-      browserDesc.textContent = 'Save your screenplay in this browser for later editing.';
-      browserOption.appendChild(browserTitle);
-      browserOption.appendChild(browserDesc);
-      
-      // Option 2: Final Draft
-      const fdxOption = document.createElement('div');
-      fdxOption.className = 'format-option';
-      const fdxTitle = document.createElement('h3');
-      fdxTitle.textContent = 'Download as Final Draft (FDX)';
-      const fdxDesc = document.createElement('p');
-      fdxDesc.textContent = 'Export in FDX format for use with Final Draft software.';
-      fdxOption.appendChild(fdxTitle);
-      fdxOption.appendChild(fdxDesc);
-      
-      // Option 3: JSON
-      const jsonOption = document.createElement('div');
-      jsonOption.className = 'format-option';
-      const jsonTitle = document.createElement('h3');
-      jsonTitle.textContent = 'Download as JSON';
-      const jsonDesc = document.createElement('p');
-      jsonDesc.textContent = 'Save as a structured JSON file that can be loaded back later.';
-      jsonOption.appendChild(jsonTitle);
-      jsonOption.appendChild(jsonDesc);
-      
-      // Add options to container
-      optionsContainer.appendChild(browserOption);
-      optionsContainer.appendChild(fdxOption);
-      optionsContainer.appendChild(jsonOption);
-      
-      // Cancel button
-      const cancelButton = document.createElement('button');
-      cancelButton.className = 'cancel-btn';
-      cancelButton.textContent = 'Cancel';
-      cancelButton.style.width = '100%';
-      cancelButton.style.marginTop = '20px';
-      
-      // Add everything to modal
-      modalContent.appendChild(title);
-      modalContent.appendChild(subtitle);
-      modalContent.appendChild(optionsContainer);
-      modalContent.appendChild(cancelButton);
-      
-      modal.appendChild(modalContent);
-      document.body.appendChild(modal);
-      
-      // Add event listeners
-      browserOption.addEventListener('click', () => {
-        document.body.removeChild(modal);
-        saveToLocal();
-      });
-      
-      fdxOption.addEventListener('click', () => {
-        document.body.removeChild(modal);
-        exportAsFdx();
-      });
-      
-      jsonOption.addEventListener('click', () => {
-        document.body.removeChild(modal);
-        saveAsJson();
-      });
-      
-      cancelButton.addEventListener('click', () => {
-        document.body.removeChild(modal);
-      });
+// Place cursor at the end of an element
+function setCaretToEnd(el) {
+  if (!el) return;
+  
+  el.focus();
+  const range = document.createRange();
+  if (el.firstChild) {
+    range.setStart(el.firstChild, el.firstChild.textContent.length);
+  } else {
+    range.setStart(el, 0);
+  }
+  range.collapse(true);
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
+
+// Extract character names from elements
+function extractCharacters() {
+  if (!editor) return;
+  
+  const characterElements = editor.querySelectorAll('.character');
+  characterElements.forEach(el => {
+    const character = el.textContent?.trim();
+    if (character) {
+      scriptCharacters.add(character);
     }
+  });
+}
+
+// Save script
+function saveScript() {
+  const saveModal = document.getElementById('save-modal-container');
+  if (saveModal) {
+    saveModal.style.display = 'flex';
+    const scriptTitle = document.getElementById('script-title');
+    if (scriptTitle) {
+      scriptTitle.value = '';
+      scriptTitle.focus();
+    }
+  }
+}
+
+// Load script
+function loadScript() {
+  const loadModal = document.getElementById('load-modal-container');
+  const scriptsList = document.getElementById('saved-scripts-list');
+  
+  if (loadModal && scriptsList) {
+    // Clear previous list
+    scriptsList.innerHTML = '';
     
-    // Show load options
-    function showLoadOptions() {
-      // Create modal for load options
-      const modal = document.createElement('div');
-      modal.className = 'modal-container';
-      modal.style.display = 'flex';
-      
-      const modalContent = document.createElement('div');
-      modalContent.className = 'modal';
-      
-      const title = document.createElement('h2');
-      title.textContent = 'Load Script';
-      
-      const subtitle = document.createElement('p');
-      subtitle.textContent = 'Choose load source:';
-      
-      // Create options
-      const optionsContainer = document.createElement('div');
-      
-      // Option 1: Load from Browser
-      const browserOption = document.createElement('div');
-      browserOption.className = 'format-option';
-      const browserTitle = document.createElement('h3');
-      browserTitle.textContent = 'Load from Browser Storage';
-      const browserDesc = document.createElement('p');
-      browserDesc.textContent = 'Load a screenplay saved in this browser.';
-      browserOption.appendChild(browserTitle);
-      browserOption.appendChild(browserDesc);
-      
-      // Option 2: Upload File
-      const fileOption = document.createElement('div');
-      fileOption.className = 'format-option';
-      const fileTitle = document.createElement('h3');
-      fileTitle.textContent = 'Upload Script File';
-      const fileDesc = document.createElement('p');
-      fileDesc.textContent = 'Upload a screenplay file (FDX, JSON, or TXT).';
-      fileOption.appendChild(fileTitle);
-      fileOption.appendChild(fileDesc);
-      
-      // Add options to container
-      optionsContainer.appendChild(browserOption);
-      optionsContainer.appendChild(fileOption);
-      
-      // Cancel button
-      const cancelButton = document.createElement('button');
-      cancelButton.className = 'cancel-btn';
-      cancelButton.textContent = 'Cancel';
-      cancelButton.style.width = '100%';
-      cancelButton.style.marginTop = '20px';
-      
-      // Add everything to modal
-      modalContent.appendChild(title);
-      modalContent.appendChild(subtitle);
-      modalContent.appendChild(optionsContainer);
-      modalContent.appendChild(cancelButton);
-      
-      modal.appendChild(modalContent);
-      document.body.appendChild(modal);
-      
-      // Add event listeners
-      browserOption.addEventListener('click', () => {
-        document.body.removeChild(modal);
-        loadFromLocal();
-      });
-      
-      fileOption.addEventListener('click', () => {
-        document.body.removeChild(modal);
-        loadFromFile();
-      });
-      
-      cancelButton.addEventListener('click', () => {
-        document.body.removeChild(modal);
-      });
-    }
+    // Get saved scripts
+    const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
     
-    // Show export options
-    function showExportOptions() {
-      // Create modal for export options
-      const modal = document.createElement('div');
-      modal.className = 'modal-container';
-      modal.style.display = 'flex';
+    if (Object.keys(scripts).length === 0) {
+      scriptsList.innerHTML = '<div style="padding: 10px;">No saved scripts found</div>';
+    } else {
+      // Sort by date (newest first)
+      const sortedScripts = Object.entries(scripts).sort((a, b) => b[1].timestamp - a[1].timestamp);
       
-      const modalContent = document.createElement('div');
-      modalContent.className = 'modal';
-      
-      const title = document.createElement('h2');
-      title.textContent = 'Export Script';
-      
-      const subtitle = document.createElement('p');
-      subtitle.textContent = 'Choose export format:';
-      
-      // Create options
-      const optionsContainer = document.createElement('div');
-      
-      // Option 1: FDX
-      const fdxOption = document.createElement('div');
-      fdxOption.className = 'format-option';
-      const fdxTitle = document.createElement('h3');
-      fdxTitle.textContent = 'Final Draft (FDX)';
-      const fdxDesc = document.createElement('p');
-      fdxDesc.textContent = 'Industry standard format for professional screenplay software.';
-      fdxOption.appendChild(fdxTitle);
-      fdxOption.appendChild(fdxDesc);
-      
-      // Option 2: PDF
-      const pdfOption = document.createElement('div');
-      pdfOption.className = 'format-option';
-      const pdfTitle = document.createElement('h3');
-      pdfTitle.textContent = 'PDF Document';
-      const pdfDesc = document.createElement('p');
-      pdfDesc.textContent = 'Professional looking PDF with proper screenplay formatting.';
-      pdfOption.appendChild(pdfTitle);
-      pdfOption.appendChild(pdfDesc);
-      
-      // Option 3: TXT
-      const txtOption = document.createElement('div');
-      txtOption.className = 'format-option';
-      const txtTitle = document.createElement('h3');
-      txtTitle.textContent = 'Plain Text (TXT)';
-      const txtDesc = document.createElement('p');
-      txtDesc.textContent = 'Simple text format readable by any text editor.';
-      txtOption.appendChild(txtTitle);
-      txtOption.appendChild(txtDesc);
-      
-      // Add options to container
-      optionsContainer.appendChild(fdxOption);
-      optionsContainer.appendChild(pdfOption);
-      optionsContainer.appendChild(txtOption);
-      
-      // Cancel button
-      const cancelButton = document.createElement('button');
-      cancelButton.className = 'cancel-btn';
-      cancelButton.textContent = 'Cancel';
-      cancelButton.style.width = '100%';
-      cancelButton.style.marginTop = '20px';
-      
-      // Add everything to modal
-      modalContent.appendChild(title);
-      modalContent.appendChild(subtitle);
-      modalContent.appendChild(optionsContainer);
-      modalContent.appendChild(cancelButton);
-      
-      modal.appendChild(modalContent);
-      document.body.appendChild(modal);
-      
-      // Add event listeners
-      fdxOption.addEventListener('click', () => {
-        document.body.removeChild(modal);
-        exportAsFdx();
-      });
-      
-      pdfOption.addEventListener('click', () => {
-        document.body.removeChild(modal);
-        exportAsPdf();
-      });
-      
-      txtOption.addEventListener('click', () => {
-        document.body.removeChild(modal);
-        exportAsTxt();
-      });
-      
-      cancelButton.addEventListener('click', () => {
-        document.body.removeChild(modal);
-      });
-    }
-
-    // Save to browser's localStorage
-    function saveToLocal() {
-      const saveModal = document.getElementById('save-modal-container');
-      if (saveModal) {
-        saveModal.style.display = 'flex';
-        const scriptTitle = document.getElementById('script-title');
-        if (scriptTitle) {
-          scriptTitle.value = '';
-          scriptTitle.focus();
-        }
-      }
-    }
-    
-    // Save as JSON file
-    function saveAsJson() {
-      // Get script title and filename
-      const title = prompt('Enter a title for your script:', 'My Screenplay') || 'My Screenplay';
-      const fileName = prompt('Enter a file name:', 'screenplay.json') || 'screenplay.json';
-      
-      // Create JSON structure
-      const elements = document.querySelectorAll('#editor .element');
-      const scriptData = {
-        title: title,
-        lastModified: new Date().toISOString(),
-        characters: Array.from(scriptCharacters),
-        elements: []
-      };
-      
-      // Add elements to JSON
-      elements.forEach(el => {
-        const classes = el.className.split(' ');
-        let type = null;
-        for (const cls of classes) {
-          if (['scene-heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(cls)) {
-            type = cls;
-            break;
-          }
-        }
+      // Create list items
+      sortedScripts.forEach(([name, data]) => {
+        const item = document.createElement('div');
+        item.className = 'saved-script-item';
+        item.setAttribute('data-name', name);
+        // Create elements instead of using innerHTML to prevent XSS
+        const nameElement = document.createElement('strong');
+        nameElement.textContent = name;
         
-        if (!type) return;
+        const dateElement = document.createElement('small');
+        dateElement.textContent = new Date(data.timestamp).toLocaleString();
         
-        const text = el.textContent.trim();
-        if (!text) return;
+        // Clear and append the new elements
+        item.appendChild(nameElement);
+        item.appendChild(document.createElement('br'));
+        item.appendChild(dateElement);
+        item.style.padding = '8px';
+        item.style.margin = '5px 0';
+        item.style.cursor = 'pointer';
+        item.style.borderBottom = '1px solid rgba(255, 255, 255, 0.1)';
         
-        scriptData.elements.push({
-          type: type,
-          text: text,
-          id: el.id || `element-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-        });
-      });
-      
-      // Create and download JSON file
-      const blob = new Blob([JSON.stringify(scriptData, null, 2)], {type: 'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName.endsWith('.json') ? fileName : fileName + '.json';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      showNotification('Script saved as JSON successfully!');
-    }
-    
-    // Load from browser's localStorage
-    function loadFromLocal() {
-      const loadModal = document.getElementById('load-modal-container');
-      const scriptsList = document.getElementById('saved-scripts-list');
-      
-      if (loadModal && scriptsList) {
-        // Clear previous list
-        scriptsList.innerHTML = '';
-        
-        // Get saved scripts
-        const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
-        
-        if (Object.keys(scripts).length === 0) {
-          scriptsList.innerHTML = '<div style="padding: 10px;">No saved scripts found</div>';
-        } else {
-          // Sort by date (newest first)
-          const sortedScripts = Object.entries(scripts).sort((a, b) => b[1].timestamp - a[1].timestamp);
-          
-          // Create list items
-          sortedScripts.forEach(([name, data]) => {
-            const item = document.createElement('div');
-            item.className = 'saved-script-item';
-            item.setAttribute('data-name', name);
-            // Create elements instead of using innerHTML to prevent XSS
-            const nameElement = document.createElement('strong');
-            nameElement.textContent = name;
-            
-            const dateElement = document.createElement('small');
-            dateElement.textContent = new Date(data.timestamp).toLocaleString();
-            
-            // Clear and append the new elements
-            item.appendChild(nameElement);
-            item.appendChild(document.createElement('br'));
-            item.appendChild(dateElement);
-            item.style.padding = '8px';
-            item.style.margin = '5px 0';
-            item.style.cursor = 'pointer';
-            item.style.borderBottom = '1px solid rgba(255, 255, 255, 0.1)';
-            
-            // Select on click
-            item.addEventListener('click', function() {
-              document.querySelectorAll('.saved-script-item').forEach(el => {
-                el.classList.remove('selected');
-                el.style.backgroundColor = '';
-              });
-              this.classList.add('selected');
-              this.style.backgroundColor = 'rgba(255, 215, 0, 0.2)';
-            });
-            
-            scriptsList.appendChild(item);
+        // Select on click
+        item.addEventListener('click', function() {
+          document.querySelectorAll('.saved-script-item').forEach(el => {
+            el.classList.remove('selected');
+            el.style.backgroundColor = '';
           });
-        }
-        
-        // Show modal
-        loadModal.style.display = 'flex';
-      }
-    }
-    
-    // Load from file upload
-    function loadFromFile() {
-      // Create file input
-      const fileInput = document.createElement('input');
-      fileInput.type = 'file';
-      fileInput.accept = '.json,.fdx,.txt';
-      fileInput.style.display = 'none';
-      document.body.appendChild(fileInput);
-      
-      // Trigger file selection
-      fileInput.click();
-      
-      // Handle file selection
-      fileInput.addEventListener('change', function() {
-        if (this.files && this.files[0]) {
-          const file = this.files[0];
-          const reader = new FileReader();
-          
-          reader.onload = function(e) {
-            try {
-              const fileExt = file.name.split('.').pop().toLowerCase();
-              
-              if (fileExt === 'json') {
-                // Parse JSON file
-                const scriptData = JSON.parse(e.target.result);
-                loadJsonScript(scriptData);
-              } else if (fileExt === 'fdx') {
-                // Parse FDX file
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(e.target.result, 'text/xml');
-                loadFdxScript(xmlDoc);
-              } else if (fileExt === 'txt') {
-                // Parse plain text
-                loadTextScript(e.target.result);
-              } else {
-                showNotification('Unsupported file format');
-              }
-            } catch (error) {
-              console.error('Error loading file:', error);
-              showNotification('Error loading file: ' + error.message);
-            }
-          };
-          
-          // Read file as text
-          if (file.name.endsWith('.json')) {
-            reader.readAsText(file);
-          } else if (file.name.endsWith('.fdx')) {
-            reader.readAsText(file);
-          } else if (file.name.endsWith('.txt')) {
-            reader.readAsText(file);
-          } else {
-            showNotification('Unsupported file format');
-          }
-        }
-        
-        // Remove the file input
-        document.body.removeChild(fileInput);
-      });
-    }
-    
-    // Load script from JSON format
-    function loadJsonScript(scriptData) {
-      try {
-        // Clear editor
-        editor.innerHTML = '';
-        
-        // Reset characters set
-        scriptCharacters = new Set();
-        if (scriptData.characters && Array.isArray(scriptData.characters)) {
-          scriptData.characters.forEach(char => scriptCharacters.add(char));
-        }
-        
-        // Add elements to editor
-        if (scriptData.elements && Array.isArray(scriptData.elements)) {
-          scriptData.elements.forEach(element => {
-            if (!element.type || !element.text) return;
-            
-            const div = document.createElement('div');
-            div.className = `element ${element.type}`;
-            div.id = element.id || `element-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-            div.textContent = element.text;
-            
-            if (isRtlMode) {
-              div.setAttribute('dir', 'rtl');
-              div.setAttribute('lang', 'ar');
-            }
-            
-            editor.appendChild(div);
-          });
-        }
-        
-        // Set focus to first element
-        const firstElement = editor.querySelector('.element');
-        if (firstElement) {
-          makeElementActive(firstElement);
-        }
-        
-        showNotification(`Script "${scriptData.title || 'Untitled'}" loaded successfully!`);
-      } catch (error) {
-        console.error('Error loading JSON script:', error);
-        showNotification('Error loading script: ' + error.message);
-      }
-    }
-    
-    // Load script from FDX format
-    function loadFdxScript(xmlDoc) {
-      try {
-        // Clear editor
-        editor.innerHTML = '';
-        
-        // Reset characters set
-        scriptCharacters = new Set();
-        
-        // Extract paragraphs from FDX
-        const paragraphs = xmlDoc.querySelectorAll('Paragraph');
-        
-        // Process each paragraph
-        paragraphs.forEach(paragraph => {
-          const type = paragraph.getAttribute('Type');
-          const textElement = paragraph.querySelector('Text');
-          if (!type || !textElement) return;
-          
-          const text = textElement.textContent.trim();
-          if (!text) return;
-          
-          // Map FDX types to our types
-          let elementType = '';
-          switch (type) {
-            case 'Scene Heading':
-              elementType = 'scene-heading';
-              break;
-            case 'Action':
-              elementType = 'action';
-              break;
-            case 'Character':
-              elementType = 'character';
-              scriptCharacters.add(text);
-              break;
-            case 'Parenthetical':
-              elementType = 'parenthetical';
-              break;
-            case 'Dialogue':
-              elementType = 'dialogue';
-              break;
-            case 'Transition':
-              elementType = 'transition';
-              break;
-            default:
-              elementType = 'action';
-              break;
-          }
-          
-          // Create element
-          const div = document.createElement('div');
-          div.className = `element ${elementType}`;
-          div.id = `element-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-          div.textContent = text;
-          
-          if (isRtlMode) {
-            div.setAttribute('dir', 'rtl');
-            div.setAttribute('lang', 'ar');
-          }
-          
-          editor.appendChild(div);
+          this.classList.add('selected');
+          this.style.backgroundColor = 'rgba(255, 215, 0, 0.2)';
         });
         
-        // Set focus to first element
-        const firstElement = editor.querySelector('.element');
-        if (firstElement) {
-          makeElementActive(firstElement);
-        }
-        
-        // Try to get title
-        let title = 'Untitled';
-        const titleElement = xmlDoc.querySelector('Title');
-        if (titleElement && titleElement.textContent) {
-          title = titleElement.textContent.trim();
-        }
-        
-        showNotification(`Script "${title}" loaded successfully!`);
-      } catch (error) {
-        console.error('Error loading FDX script:', error);
-        showNotification('Error loading script: ' + error.message);
-      }
-    }
-    
-    // Load script from plain text
-    function loadTextScript(text) {
-      try {
-        // Clear editor
-        editor.innerHTML = '';
-        
-        // Reset characters set
-        scriptCharacters = new Set();
-        
-        // Split text into lines
-        const lines = text.split('\n');
-        
-        let currentType = 'scene-heading';
-        let buffer = '';
-        
-        // Process each line
-        for (let i = 0; i < lines.length; i++) {
-          const line = lines[i].trim();
-          
-          // Skip empty lines
-          if (!line) {
-            // Empty line might indicate end of current element
-            if (buffer) {
-              addElementFromText(currentType, buffer);
-              buffer = '';
-              
-              // Determine next element type
-              if (currentType === 'scene-heading') {
-                currentType = 'action';
-              } else if (currentType === 'transition') {
-                currentType = 'scene-heading';
-              } else if (currentType === 'dialogue') {
-                currentType = 'character';
-              }
-            }
-            continue;
-          }
-          
-          // Try to determine element type from content
-          if (line.toUpperCase() === line && line.includes('INT.') || line.includes('EXT.')) {
-            // If we have buffered text, add it
-            if (buffer) {
-              addElementFromText(currentType, buffer);
-            }
-            
-            // This is a scene heading
-            currentType = 'scene-heading';
-            buffer = line;
-          } else if (line.toUpperCase() === line && line.endsWith('TO:')) {
-            // If we have buffered text, add it
-            if (buffer) {
-              addElementFromText(currentType, buffer);
-            }
-            
-            // This is a transition
-            currentType = 'transition';
-            buffer = line;
-          } else if (line.toUpperCase() === line && !line.startsWith('(')) {
-            // If we have buffered text, add it
-            if (buffer) {
-              addElementFromText(currentType, buffer);
-            }
-            
-            // This is a character
-            currentType = 'character';
-            buffer = line;
-            scriptCharacters.add(line);
-          } else if (line.startsWith('(') && line.endsWith(')')) {
-            // If we have buffered text, add it
-            if (buffer) {
-              addElementFromText(currentType, buffer);
-            }
-            
-            // This is a parenthetical
-            currentType = 'parenthetical';
-            buffer = line;
-          } else {
-            // If we're coming from a character or parenthetical, this is dialogue
-            if (currentType === 'character' || currentType === 'parenthetical') {
-              // If we have buffered text, add it
-              if (buffer) {
-                addElementFromText(currentType, buffer);
-              }
-              
-              currentType = 'dialogue';
-              buffer = line;
-            } else if (buffer) {
-              // Append to current buffer with a space
-              buffer += ' ' + line;
-            } else {
-              // Start new buffer
-              buffer = line;
-            }
-          }
-        }
-        
-        // Add any remaining buffered text
-        if (buffer) {
-          addElementFromText(currentType, buffer);
-        }
-        
-        // Set focus to first element
-        const firstElement = editor.querySelector('.element');
-        if (firstElement) {
-          makeElementActive(firstElement);
-        }
-        
-        showNotification('Script loaded successfully!');
-      } catch (error) {
-        console.error('Error loading text script:', error);
-        showNotification('Error loading script: ' + error.message);
-      }
-    }
-    
-    // Helper function to add element from text
-    function addElementFromText(type, text) {
-      const div = document.createElement('div');
-      div.className = `element ${type}`;
-      div.id = `element-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      div.textContent = text;
-      
-      if (isRtlMode) {
-        div.setAttribute('dir', 'rtl');
-        div.setAttribute('lang', 'ar');
-      }
-      
-      editor.appendChild(div);
-    }
-    
-    // Export as plain text
-    function exportAsTxt() {
-      // Create content for export
-      let content = '';
-      
-      // Get all elements
-      const elements = document.querySelectorAll('#editor .element');
-      elements.forEach(el => {
-        const classes = el.className.split(' ');
-        let type = null;
-        for (const cls of classes) {
-          if (['scene-heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(cls)) {
-            type = cls;
-            break;
-          }
-        }
-        
-        if (!type) return;
-        
-        const text = el.textContent.trim();
-        if (!text) return;
-        
-        // Format based on element type
-        switch (type) {
-          case 'scene-heading':
-            content += text.toUpperCase() + '\n\n';
-            break;
-          case 'action':
-            content += text + '\n\n';
-            break;
-          case 'character':
-            content += text.toUpperCase() + '\n';
-            break;
-          case 'parenthetical':
-            content += text + '\n';
-            break;
-          case 'dialogue':
-            content += text + '\n\n';
-            break;
-          case 'transition':
-            content += text.toUpperCase() + '\n\n';
-            break;
-        }
+        scriptsList.appendChild(item);
       });
-      
-      // Prompt for file name
-      const fileName = prompt('Enter a file name for your script:', 'screenplay.txt') || 'screenplay.txt';
-      
-      // Create a download link
-      const blob = new Blob([content], {type: 'text/plain'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName.endsWith('.txt') ? fileName : fileName + '.txt';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      showNotification('Script exported as TXT successfully!');
     }
     
-    // Export as Final Draft FDX format
-    function exportAsFdx() {
-      // Get script title
-      const title = prompt('Enter a title for your script:', 'My Screenplay') || 'My Screenplay';
-      const fileName = prompt('Enter a file name:', 'screenplay.fdx') || 'screenplay.fdx';
-      
-      // Create FDX XML structure
-      let fdxContent = `<?xml version="1.0" encoding="UTF-8"?>
-<FinalDraft DocumentType="Script" Template="Screenplay" Version="3">
-  <Content>
-    <TitlePage>
-      <Title>${escapeXml(title)}</Title>
-      <Author>Fade Out Writer</Author>
-      <Copyright>Copyright (c) ${new Date().getFullYear()}</Copyright>
-    </TitlePage>
-    <Paragraph Type="Action">
-      <Text></Text>
-    </Paragraph>`;
-      
-      // Get all elements and convert to FDX format
-      const elements = document.querySelectorAll('#editor .element');
-      elements.forEach(el => {
-        const classes = el.className.split(' ');
-        let type = null;
-        for (const cls of classes) {
-          if (['scene-heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(cls)) {
-            type = cls;
-            break;
-          }
-        }
-        
-        if (!type) return;
-        
-        const text = el.textContent.trim();
-        if (!text) return;
-        
-        // Map our types to Final Draft types
-        let fdxType = '';
-        switch (type) {
-          case 'scene-heading':
-            fdxType = 'Scene Heading';
-            break;
-          case 'action':
-            fdxType = 'Action';
-            break;
-          case 'character':
-            fdxType = 'Character';
-            break;
-          case 'parenthetical':
-            fdxType = 'Parenthetical';
-            break;
-          case 'dialogue':
-            fdxType = 'Dialogue';
-            break;
-          case 'transition':
-            fdxType = 'Transition';
-            break;
-        }
-        
-        // Add paragraph to FDX
-        fdxContent += `
-    <Paragraph Type="${fdxType}">
-      <Text>${escapeXml(text)}</Text>
-    </Paragraph>`;
-      });
-      
-      // Close FDX structure
-      fdxContent += `
-  </Content>
-</FinalDraft>`;
-      
-      // Create a download link
-      const blob = new Blob([fdxContent], {type: 'application/xml'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName.endsWith('.fdx') ? fileName : fileName + '.fdx';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      showNotification('Script exported as FDX successfully!');
-    }
-    
-    // Export as PDF format
-    function exportAsPdf() {
-      const title = prompt('Enter a title for your script:', 'My Screenplay') || 'My Screenplay';
-      const fileName = prompt('Enter a file name:', 'screenplay.pdf') || 'screenplay.pdf';
-      
-      // Create a styled HTML version for PDF conversion
-      let htmlContent = `
+    // Show modal
+    loadModal.style.display = 'flex';
+  }
+}
+
+// Export script as HTML
+function exportScript() {
+  const content = editor.innerHTML;
+  const title = prompt('Enter script title for export:', 'My Screenplay');
+  
+  if (!title) return;
+  
+  const exportHtml = \`
 <!DOCTYPE html>
 <html>
 <head>
-  <title>${escapeHtml(title)}</title>
+  <meta charset="UTF-8">
+  <title>\${title}</title>
   <style>
-    @page {
-      size: 8.5in 11in;
-      margin: 1in;
-    }
     body {
       font-family: Courier, monospace;
-      font-size: 12pt;
-      line-height: 1.2;
-      margin: 0;
-      padding: 0;
-    }
-    .title-page {
-      height: 8.5in;
-      position: relative;
-      text-align: center;
-      page-break-after: always;
-    }
-    .title {
-      font-size: 24pt;
-      text-align: center;
-      position: absolute;
-      top: 3.5in;
-      width: 100%;
-    }
-    .author {
-      position: absolute;
-      bottom: 3in;
-      width: 100%;
-      text-align: center;
-    }
-    .copyright {
-      position: absolute;
-      bottom: 1in;
-      width: 100%;
-      text-align: center;
-      font-size: 10pt;
+      line-height: 1.5;
+      margin: 40px;
     }
     .scene-heading {
       text-transform: uppercase;
       font-weight: bold;
-      margin-top: 1.5em;
-      margin-bottom: 1em;
+      margin-top: 2em;
     }
-    .action {
-      margin: 1em 0;
-    }
+    .action { margin: 1em 0; }
     .character {
       text-transform: uppercase;
-      margin-top: 1em;
-      margin-bottom: 0.1em;
-      margin-left: 2.2in;
+      margin-left: 200px;
+      margin-bottom: 0;
     }
     .parenthetical {
-      margin-left: 1.9in;
-      margin-bottom: 0.1em;
+      margin-left: 160px;
+      margin-bottom: 0;
     }
     .dialogue {
-      width: 3.5in;
-      margin-left: 1.5in;
+      margin-left: 100px;
+      margin-right: 100px;
       margin-bottom: 1em;
     }
     .transition {
       text-align: right;
       text-transform: uppercase;
-      margin: 1em 0;
+      margin: 2em 0;
     }
   </style>
 </head>
 <body>
-  <div class="title-page">
-    <div class="title">${escapeHtml(title)}</div>
-    <div class="author">Written by<br>Fade Out Writer</div>
-    <div class="copyright">Copyright (c) ${new Date().getFullYear()}</div>
-  </div>`;
-      
-      // Get all elements and convert to HTML
-      const elements = document.querySelectorAll('#editor .element');
-      elements.forEach(el => {
-        const classes = el.className.split(' ');
-        let type = null;
-        for (const cls of classes) {
-          if (['scene-heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(cls)) {
-            type = cls;
-            break;
-          }
-        }
-        
-        if (!type) return;
-        
-        const text = el.textContent.trim();
-        if (!text) return;
-        
-        // Add element to HTML
-        htmlContent += `
-  <div class="${type}">${escapeHtml(text)}</div>`;
-      });
-      
-      // Close HTML
-      htmlContent += `
+  <h1>\${title}</h1>
+  <div id="screenplay">
+    \${content}
+  </div>
 </body>
-</html>`;
-      
-      // Create a new window for printing
-      const printWindow = window.open('', '_blank');
-      printWindow.document.write(htmlContent);
-      printWindow.document.close();
-      
-      // Show instructions for saving as PDF
-      const instructions = document.createElement('div');
-      instructions.className = 'modal-container';
-      instructions.style.display = 'flex';
-      
-      const instructionsContent = document.createElement('div');
-      instructionsContent.className = 'modal';
-      
-      const instructionsTitle = document.createElement('h2');
-      instructionsTitle.textContent = 'Save as PDF';
-      
-      const instructionsText = document.createElement('p');
-      instructionsText.innerHTML = 'A new tab has opened with your formatted screenplay.<br><br>To save as PDF:<br>1. Press Ctrl+P (or Cmd+P on Mac)<br>2. Select "Save as PDF" in the printer options<br>3. Click Save';
-      
-      const okButton = document.createElement('button');
-      okButton.className = 'confirm-btn';
-      okButton.textContent = 'OK';
-      okButton.style.width = '100%';
-      okButton.style.marginTop = '20px';
-      
-      instructionsContent.appendChild(instructionsTitle);
-      instructionsContent.appendChild(instructionsText);
-      instructionsContent.appendChild(okButton);
-      
-      instructions.appendChild(instructionsContent);
-      document.body.appendChild(instructions);
-      
-      // Handle ok button click
-      okButton.addEventListener('click', () => {
-        document.body.removeChild(instructions);
-      });
-      
-      // Set timeout to trigger print dialog
-      setTimeout(() => {
-        printWindow.print();
-      }, 1000);
-      
-      showNotification('Print dialog opened to save as PDF!');
-    }
+</html>\`;
+  
+  // Create a blob link
+  const blob = new Blob([exportHtml], {type: 'text/html'});
+  const url = URL.createObjectURL(blob);
+  
+  // Create a download link
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = \`\${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.html\`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  
+  // Show notification
+  showNotification('Screenplay exported successfully!');
+}
+
+// Toggle theme
+function toggleTheme() {
+  const themeToggle = document.getElementById('theme-toggle');
+  const body = document.body;
+  
+  body.classList.toggle('light');
+  
+  if (body.classList.contains('light')) {
+    themeToggle.textContent = isRtlMode ? arabicLabels['DARK'] : 'DARK';
+  } else {
+    themeToggle.textContent = isRtlMode ? arabicLabels['LIGHT'] : 'LIGHT';
+  }
+}
+
+// Toggle direction (RTL for Arabic)
+function toggleDirection() {
+  const dirToggle = document.getElementById('rtl-toggle');
+  const elements = document.querySelectorAll('#editor .element');
+  
+  isRtlMode = !isRtlMode;
+  
+  if (isRtlMode) {
+    // Switch to RTL
+    editor.classList.add('rtl');
+    editor.classList.remove('ltr');
+    dirToggle.textContent = arabicLabels['ARABIC']; // "English" in Arabic
     
-    // Helper function to escape XML
-    function escapeXml(unsafe) {
-      return unsafe.replace(/[<>&'"]/g, function (c) {
-        switch (c) {
-          case '<': return '&lt;';
-          case '>': return '&gt;';
-          case '&': return '&amp;';
-          case '\'': return '&apos;';
-          case '"': return '&quot;';
-        }
-      });
-    }
+    // Update all elements
+    elements.forEach(el => {
+      el.setAttribute('dir', 'rtl');
+      el.setAttribute('lang', 'ar');
+    });
     
-    // Helper function to escape HTML
-    function escapeHtml(unsafe) {
-      return unsafe.replace(/[&<>"']/g, function (c) {
-        switch (c) {
-          case '&': return '&amp;';
-          case '<': return '&lt;';
-          case '>': return '&gt;';
-          case '"': return '&quot;';
-          case '\'': return '&#039;';
-        }
+    // Update toolbar labels
+    updateToolbarLabels(true);
+  } else {
+    // Switch to LTR
+    editor.classList.remove('rtl');
+    editor.classList.add('ltr');
+    dirToggle.textContent = 'ARABIC';
+    
+    // Update all elements
+    elements.forEach(el => {
+      el.removeAttribute('dir');
+      el.removeAttribute('lang');
+    });
+    
+    // Update toolbar labels
+    updateToolbarLabels(false);
+  }
+}
+
+// Update toolbar labels based on language
+function updateToolbarLabels(useArabic) {
+  if (useArabic) {
+    document.querySelectorAll('.element-button').forEach(btn => {
+      const type = btn.dataset.type;
+      btn.textContent = arabicLabels[btn.textContent];
+    });
+    
+    document.getElementById('save-btn').textContent = arabicLabels['SAVE'];
+    document.getElementById('load-btn').textContent = arabicLabels['LOAD'];
+    document.getElementById('export-btn').textContent = arabicLabels['EXPORT'];
+    document.getElementById('feedback-btn').textContent = arabicLabels['FEEDBACK'];
+    
+    // Toggle button needs special handling
+    const themeToggle = document.getElementById('theme-toggle');
+    themeToggle.textContent = document.body.classList.contains('light') ? arabicLabels['DARK'] : arabicLabels['LIGHT'];
+  } else {
+    document.querySelectorAll('.element-button').forEach(btn => {
+      const type = btn.dataset.type;
+      btn.textContent = type.replace('-', ' ').toUpperCase();
+    });
+    
+    document.getElementById('save-btn').textContent = 'SAVE';
+    document.getElementById('load-btn').textContent = 'LOAD';
+    document.getElementById('export-btn').textContent = 'EXPORT';
+    document.getElementById('feedback-btn').textContent = 'FEEDBACK';
+    
+    // Toggle button needs special handling
+    const themeToggle = document.getElementById('theme-toggle');
+    themeToggle.textContent = document.body.classList.contains('light') ? 'DARK' : 'LIGHT';
+  }
+}
+
+// Toggle feedback box
+function toggleFeedback() {
+  const feedbackBox = document.getElementById('feedback-box');
+  if (feedbackBox) {
+    feedbackBox.style.display = feedbackBox.style.display === 'none' || !feedbackBox.style.display ? 'block' : 'none';
+    if (feedbackBox.style.display === 'block') {
+      document.getElementById('feedback-text').focus();
+    }
+  }
+}
+
+// Show character suggestions dropdown
+function showCharacterSuggestions(text, element) {
+  if (!text) return;
+  
+  const characterSuggestions = document.getElementById('character-suggestions');
+  if (!characterSuggestions) return;
+  
+  // Get matching characters
+  const matches = Array.from(scriptCharacters).filter(char => 
+    char.includes(text) && char !== text
+  );
+  
+  if (matches.length > 0) {
+    // Clear previous suggestions
+    characterSuggestions.innerHTML = '';
+    
+    // Position the dropdown
+    const rect = element.getBoundingClientRect();
+    characterSuggestions.style.top = \`\${rect.bottom + window.scrollY}px\`;
+    characterSuggestions.style.left = \`\${rect.left + window.scrollX}px\`;
+    characterSuggestions.style.display = 'block';
+    
+    // Add suggestion items
+    matches.forEach(char => {
+      const item = document.createElement('div');
+      item.className = 'character-suggestion-item';
+      item.textContent = char;
+      item.addEventListener('click', () => {
+        element.textContent = char;
+        hideCharacterSuggestions();
+        
+        // After selecting a character, create a dialogue element
+        addNewElement('dialogue');
       });
-    }
+      characterSuggestions.appendChild(item);
+    });
+  } else {
+    hideCharacterSuggestions();
+  }
+}
 
-    // Toggle theme
-    function toggleTheme() {
-      const themeToggle = document.getElementById('theme-toggle');
-      const body = document.body;
-      
-      body.classList.toggle('light');
-      
-      if (body.classList.contains('light')) {
-        themeToggle.textContent = isRtlMode ? arabicLabels['DARK'] : 'DARK';
-      } else {
-        themeToggle.textContent = isRtlMode ? arabicLabels['LIGHT'] : 'LIGHT';
-      }
-    }
+// Hide character suggestions
+function hideCharacterSuggestions() {
+  const characterSuggestions = document.getElementById('character-suggestions');
+  if (characterSuggestions) {
+    characterSuggestions.style.display = 'none';
+  }
+}
 
-    // Toggle direction (RTL for Arabic)
-    function toggleDirection() {
-      const dirToggle = document.getElementById('rtl-toggle');
-      const elements = document.querySelectorAll('#editor .element');
-      
-      isRtlMode = !isRtlMode;
-      
-      if (isRtlMode) {
-        // Switch to RTL
-        editor.classList.add('rtl');
-        editor.classList.remove('ltr');
-        dirToggle.textContent = arabicLabels['ARABIC']; // "English" in Arabic
-        
-        // Update all elements
-        elements.forEach(el => {
-          el.setAttribute('dir', 'rtl');
-          el.setAttribute('lang', 'ar');
-        });
-        
-        // Update toolbar labels
-        updateToolbarLabels(true);
-      } else {
-        // Switch to LTR
-        editor.classList.remove('rtl');
-        editor.classList.add('ltr');
-        dirToggle.textContent = 'ARABIC';
-        
-        // Update all elements
-        elements.forEach(el => {
-          el.removeAttribute('dir');
-          el.removeAttribute('lang');
-        });
-        
-        // Update toolbar labels
-        updateToolbarLabels(false);
-      }
-    }
+// Show transition dropdown
+function showTransitionDropdown(element) {
+  const dropdown = document.getElementById('transition-dropdown');
+  if (!dropdown) return;
+  
+  // Position the dropdown
+  const rect = element.getBoundingClientRect();
+  dropdown.style.top = \`\${rect.bottom + window.scrollY}px\`;
+  dropdown.style.left = \`\${rect.left + window.scrollX}px\`;
+  
+  // Clear existing items and rebuild with event listeners
+  dropdown.innerHTML = '';
+  
+  // Add each transition item
+  commonTransitions.forEach(transitionText => {
+    const oldItem = document.createElement('div');
+    oldItem.className = 'transition-item';
+    oldItem.textContent = transitionText;
+    oldItem.dataset.text = transitionText;
+    dropdown.appendChild(oldItem);
+    
+    // Add new event listener
+    oldItem.addEventListener('click', () => {
+      element.textContent = oldItem.textContent;
+      hideTransitionDropdown();
+      setCaretToEnd(element);
+    });
+  });
+  
+  // Show the dropdown
+  dropdown.style.display = 'block';
+  
+  // Add a click handler to the document to close the dropdown when clicking outside
+  setTimeout(() => {
+    document.addEventListener('click', hideTransitionDropdownOnClickOutside);
+  }, 10);
+}
 
-    // Update toolbar labels based on language
-    function updateToolbarLabels(useArabic) {
-      if (useArabic) {
-        document.querySelectorAll('.element-button').forEach(btn => {
-          const type = btn.dataset.type;
-          btn.textContent = arabicLabels[btn.textContent];
-        });
-        
-        document.getElementById('save-btn').textContent = arabicLabels['SAVE'];
-        document.getElementById('load-btn').textContent = arabicLabels['LOAD'];
-        document.getElementById('export-btn').textContent = arabicLabels['EXPORT'];
-        document.getElementById('feedback-btn').textContent = arabicLabels['FEEDBACK'];
-        document.getElementById('share-btn').textContent = arabicLabels['SHARE'];
-        
-        // Toggle button needs special handling
-        const themeToggle = document.getElementById('theme-toggle');
-        themeToggle.textContent = document.body.classList.contains('light') ? arabicLabels['DARK'] : arabicLabels['LIGHT'];
-      } else {
-        document.querySelectorAll('.element-button').forEach(btn => {
-          const type = btn.dataset.type;
-          btn.textContent = type.replace('-', ' ').toUpperCase();
-        });
-        
-        document.getElementById('save-btn').textContent = 'SAVE';
-        document.getElementById('load-btn').textContent = 'LOAD';
-        document.getElementById('export-btn').textContent = 'EXPORT';
-        document.getElementById('feedback-btn').textContent = 'FEEDBACK';
-        document.getElementById('share-btn').textContent = 'SHARE';
-        
-        // Toggle button needs special handling
-        const themeToggle = document.getElementById('theme-toggle');
-        themeToggle.textContent = document.body.classList.contains('light') ? 'DARK' : 'LIGHT';
-      }
-    }
+// Hide transition dropdown
+function hideTransitionDropdown() {
+  const dropdown = document.getElementById('transition-dropdown');
+  if (dropdown) {
+    dropdown.style.display = 'none';
+  }
+  
+  // Remove the document click handler
+  document.removeEventListener('click', hideTransitionDropdownOnClickOutside);
+}
 
-    // Toggle feedback box
-    function toggleFeedback() {
-      const feedbackBox = document.getElementById('feedback-box');
-      if (feedbackBox) {
-        feedbackBox.style.display = feedbackBox.style.display === 'none' || !feedbackBox.style.display ? 'block' : 'none';
-        if (feedbackBox.style.display === 'block') {
-          document.getElementById('feedback-text').focus();
-        }
-      }
-    }
+// Hide dropdown when clicking outside
+function hideTransitionDropdownOnClickOutside(e) {
+  const dropdown = document.getElementById('transition-dropdown');
+  const clickedOnDropdown = dropdown.contains(e.target);
+  
+  if (!clickedOnDropdown) {
+    hideTransitionDropdown();
+  }
+}
 
-    // Show notification
-    function showNotification(message) {
-      if (!notification) return;
-      
-      notification.textContent = message;
-      notification.style.display = 'block';
-      
-      // Hide after 3 seconds
-      setTimeout(() => {
-        notification.style.display = 'none';
-      }, 3000);
-    }
+// Share script
+function shareScript() {
+  const shareModal = document.getElementById('share-modal-container');
+  const shareLink = document.getElementById('share-link');
+  
+  if (shareModal && shareLink) {
+    // Generate a unique ID for the script
+    const scriptId = Math.random().toString(36).substring(2, 15);
+    
+    // In a real app, this would save to a database and generate a real share URL
+    // For this demo, we'll just create a fake URL
+    const url = window.location.href.split('?')[0] + '?script=' + scriptId;
+    
+    shareLink.value = url;
+    shareModal.style.display = 'flex';
+  }
+}
 
-    // Share script
-    function shareScript() {
-      const shareModal = document.getElementById('share-modal-container');
-      const shareLink = document.getElementById('share-link');
-      
-      if (shareModal && shareLink) {
-        // Generate a unique ID for the script
-        const scriptId = Math.random().toString(36).substring(2, 15);
-        
-        // In a real app, this would save to a database and generate a real share URL
-        // For this demo, we'll just create a fake URL
-        const url = window.location.href.split('?')[0] + '?script=' + scriptId;
-        
-        shareLink.value = url;
-        shareModal.style.display = 'flex';
-      }
-    }
+// Show notification
+function showNotification(message) {
+  if (!notification) return;
+  
+  notification.textContent = message;
+  notification.style.display = 'block';
+  
+  // Hide after 2 seconds
+  setTimeout(() => {
+    notification.style.display = 'none';
+  }, 2000);
+}
   </script>
 </body>
 </html>
