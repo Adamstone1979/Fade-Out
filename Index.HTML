@@ -1,46 +1,661 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <script type="module">
-import { createHotContext } from "/@vite/client";
-const hot = createHotContext("/__dummy__runtime-error-plugin");
-
-function sendError(error) {
-  if (!(error instanceof Error)) {
-    error = new Error("(unknown runtime error)");
-  }
-  const serialized = {
-    message: error.message,
-    stack: error.stack,
-  };
-  hot.send("runtime-error-plugin:error", serialized);
-}
-
-window.addEventListener("error", (evt) => {
-  sendError(evt.error);
-});
-
-window.addEventListener("unhandledrejection", (evt) => {
-  sendError(evt.reason);
-});
-</script>
-
-    <script type="module">
-import RefreshRuntime from "/@react-refresh"
-RefreshRuntime.injectIntoGlobalHook(window)
-window.$RefreshReg$ = () => {}
-window.$RefreshSig$ = () => (type) => type
-window.__vite_plugin_react_preamble_installed__ = true
-</script>
-
-    <script type="module" src="/@vite/client"></script>
-
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fade Out - Screenplay Editor</title>
-    <meta name="description" content="Fade Out - A professional screenplay editor with bilingual support for writing, formatting, and sharing scripts with industry-standard formatting." />
-    <meta property="og:title" content="Fade Out - Professional Screenplay Editor" />
-    <meta property="og:description" content="Write, format, and share screenplays with industry-standard formatting. Bilingual support included." />
-    <meta property="og:type" content="website" />
+    <meta name="description" content="Fade Out - A professional screenplay editor with bilingual support for writing, formatting, and sharing scripts with industry-standard formatting.">
+    <meta property="og:title" content="Fade Out - Professional Screenplay Editor">
+    <meta property="og:description" content="Write, format, and share screenplays with industry-standard formatting. Bilingual support included.">
+    <meta property="og:type" content="website">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    <script type="module">"use strict";(()=>{var P="0.1.2";var T={HIGHLIGHT_COLOR:"#0079F2",HIGHLIGHT_BG:"#0079F210",ALLOWED_DOMAIN:".replit.dev"},I={highlighter:{position:"absolute",zIndex:Number.MAX_SAFE_INTEGER-3,boxSizing:"border-box",pointerEvents:"none",border:`2px solid ${T.HIGHLIGHT_COLOR}`,borderRadius:"4px",background:T.HIGHLIGHT_BG,transition:"opacity 0.2s",willChange:"opacity",opacity:"0"},label:{position:"absolute",backgroundColor:T.HIGHLIGHT_COLOR,color:"#FFFFFF",padding:"2px 6px",borderRadius:"4px",fontSize:"12px",fontFamily:"monospace",transform:"translateY(-100%)",marginTop:"-4px",zIndex:Number.MAX_SAFE_INTEGER-2,pointerEvents:"none",opacity:"0"}};function xe(e,t){return e[13]=1,e[14]=t>>8,e[15]=t&255,e[16]=t>>8,e[17]=t&255,e}var re=112,oe=72,ie=89,se=115,W;function Ie(){let e=new Int32Array(256);for(let t=0;t<256;t++){let n=t;for(let r=0;r<8;r++)n=n&1?3988292384^n>>>1:n>>>1;e[t]=n}return e}function De(e){let t=-1;W||(W=Ie());for(let n=0;n<e.length;n++)t=W[(t^e[n])&255]^t>>>8;return t^-1}function He(e){let t=e.length-1;for(let n=t;n>=4;n--)if(e[n-4]===9&&e[n-3]===re&&e[n-2]===oe&&e[n-1]===ie&&e[n]===se)return n-3;return 0}function Re(e,t,n=!1){let r=new Uint8Array(13);t*=39.3701,r[0]=re,r[1]=oe,r[2]=ie,r[3]=se,r[4]=t>>>24,r[5]=t>>>16,r[6]=t>>>8,r[7]=t&255,r[8]=r[4],r[9]=r[5],r[10]=r[6],r[11]=r[7],r[12]=1;let s=De(r),i=new Uint8Array(4);if(i[0]=s>>>24,i[1]=s>>>16,i[2]=s>>>8,i[3]=s&255,n){let a=He(e);return e.set(r,a),e.set(i,a+13),e}else{let a=new Uint8Array(4);a[0]=0,a[1]=0,a[2]=0,a[3]=9;let o=new Uint8Array(54);return o.set(e,0),o.set(a,33),o.set(r,37),o.set(i,50),o}}var ae="[modern-screenshot]",A=typeof window<"u",_e=A&&"Worker"in window,Me=A&&"atob"in window,jt=A&&"btoa"in window,j=A?window.navigator?.userAgent:"",le=j.includes("Chrome"),O=j.includes("AppleWebKit")&&!le,z=j.includes("Firefox"),Fe=e=>e&&"__CONTEXT__"in e,Pe=e=>e.constructor.name==="CSSFontFaceRule",Oe=e=>e.constructor.name==="CSSImportRule",v=e=>e.nodeType===1,_=e=>typeof e.className=="object",ce=e=>e.tagName==="image",ke=e=>e.tagName==="use",D=e=>v(e)&&typeof e.style<"u"&&!_(e),Be=e=>e.nodeType===8,Ue=e=>e.nodeType===3,x=e=>e.tagName==="IMG",k=e=>e.tagName==="VIDEO",$e=e=>e.tagName==="CANVAS",We=e=>e.tagName==="TEXTAREA",Ge=e=>e.tagName==="INPUT",je=e=>e.tagName==="STYLE",ze=e=>e.tagName==="SCRIPT",Ve=e=>e.tagName==="SELECT",qe=e=>e.tagName==="SLOT",Xe=e=>e.tagName==="IFRAME",Ye=(...e)=>console.warn(ae,...e);function Je(e){let t=e?.createElement?.("canvas");return t&&(t.height=t.width=1),!!t&&"toDataURL"in t&&!!t.toDataURL("image/webp").includes("image/webp")}var G=e=>e.startsWith("data:");function ue(e,t){if(e.match(/^[a-z]+:\/\//i))return e;if(A&&e.match(/^\/\//))return window.location.protocol+e;if(e.match(/^[a-z]+:/i)||!A)return e;let n=B().implementation.createHTMLDocument(),r=n.createElement("base"),s=n.createElement("a");return n.head.appendChild(r),n.body.appendChild(s),t&&(r.href=t),s.href=e,s.href}function B(e){return(e&&v(e)?e?.ownerDocument:e)??window.document}var U="http://www.w3.org/2000/svg";function Ke(e,t,n){let r=B(n).createElementNS(U,"svg");return r.setAttributeNS(null,"width",e.toString()),r.setAttributeNS(null,"height",t.toString()),r.setAttributeNS(null,"viewBox",`0 0 ${e} ${t}`),r}function Qe(e,t){let n=new XMLSerializer().serializeToString(e);return t&&(n=n.replace(/[\u0000-\u0008\v\f\u000E-\u001F\uD800-\uDFFF\uFFFE\uFFFF]/gu,"")),`data:image/svg+xml;charset=utf-8,${encodeURIComponent(n)}`}async function Ze(e,t="image/png",n=1){try{return await new Promise((r,s)=>{e.toBlob(i=>{i?r(i):s(new Error("Blob is null"))},t,n)})}catch(r){if(Me)return et(e.toDataURL(t,n));throw r}}function et(e){let[t,n]=e.split(","),r=t.match(/data:(.+);/)?.[1]??void 0,s=window.atob(n),i=s.length,a=new Uint8Array(i);for(let o=0;o<i;o+=1)a[o]=s.charCodeAt(o);return new Blob([a],{type:r})}function de(e,t){return new Promise((n,r)=>{let s=new FileReader;s.onload=()=>n(s.result),s.onerror=()=>r(s.error),s.onabort=()=>r(new Error(`Failed read blob to ${t}`)),t==="dataUrl"?s.readAsDataURL(e):t==="arrayBuffer"&&s.readAsArrayBuffer(e)})}var tt=e=>de(e,"dataUrl"),nt=e=>de(e,"arrayBuffer");function N(e,t){let n=B(t).createElement("img");return n.decoding="sync",n.loading="eager",n.src=e,n}function H(e,t){return new Promise(n=>{let{timeout:r,ownerDocument:s,onError:i,onWarn:a}=t??{},o=typeof e=="string"?N(e,B(s)):e,c=null,d=null;function l(){n(o),c&&clearTimeout(c),d?.()}if(r&&(c=setTimeout(l,r)),k(o)){let u=o.currentSrc||o.src;if(!u)return o.poster?H(o.poster,t).then(n):l();if(o.readyState>=2)return l();let h=l,f=g=>{a?.("Failed video load",u,g),i?.(g),l()};d=()=>{o.removeEventListener("loadeddata",h),o.removeEventListener("error",f)},o.addEventListener("loadeddata",h,{once:!0}),o.addEventListener("error",f,{once:!0})}else{let u=ce(o)?o.href.baseVal:o.currentSrc||o.src;if(!u)return l();let h=async()=>{if(x(o)&&"decode"in o)try{await o.decode()}catch(g){a?.("Failed to decode image, trying to render anyway",o.dataset.originalSrc||u,g)}l()},f=g=>{a?.("Failed image load",o.dataset.originalSrc||u,g),l()};if(x(o)&&o.complete)return h();d=()=>{o.removeEventListener("load",h),o.removeEventListener("error",f)},o.addEventListener("load",h,{once:!0}),o.addEventListener("error",f,{once:!0})}})}async function rt(e,t){D(e)&&(x(e)||k(e)?await H(e,t):await Promise.all(["img","video"].flatMap(n=>Array.from(e.querySelectorAll(n)).map(r=>H(r,t)))))}var he=function(){let t=0,n=()=>`0000${(Math.random()*36**4<<0).toString(36)}`.slice(-4);return()=>(t+=1,`u${n()}${t}`)}();function ge(e){return e?.split(",").map(t=>t.trim().replace(/"|'/g,"").toLowerCase()).filter(Boolean)}var K=0;function ot(e){let t=`${ae}[#${K}]`;return K++,{time:n=>e&&console.time(`${t} ${n}`),timeEnd:n=>e&&console.timeEnd(`${t} ${n}`),warn:(...n)=>e&&Ye(...n)}}function it(e){return{cache:e?"no-cache":"force-cache"}}async function V(e,t){return Fe(e)?e:st(e,{...t,autoDestruct:!0})}async function st(e,t){let{scale:n=1,workerUrl:r,workerNumber:s=1}=t||{},i=!!t?.debug,a=t?.features??!0,o=e.ownerDocument??(A?window.document:void 0),c=e.ownerDocument?.defaultView??(A?window:void 0),d=new Map,l={width:0,height:0,quality:1,type:"image/png",scale:n,backgroundColor:null,style:null,filter:null,maximumCanvasSize:0,timeout:3e4,progress:null,debug:i,fetch:{requestInit:it(t?.fetch?.bypassingCache),placeholderImage:"data:image/png;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",bypassingCache:!1,...t?.fetch},fetchFn:null,font:{},drawImageInterval:100,workerUrl:null,workerNumber:s,onCloneNode:null,onEmbedNode:null,onCreateForeignObjectSvg:null,includeStyleProperties:null,autoDestruct:!1,...t,__CONTEXT__:!0,log:ot(i),node:e,ownerDocument:o,ownerWindow:c,dpi:n===1?null:96*n,svgStyleElement:fe(o),svgDefsElement:o?.createElementNS(U,"defs"),svgStyles:new Map,defaultComputedStyles:new Map,workers:[...Array.from({length:_e&&r&&s?s:0})].map(()=>{try{let f=new Worker(r);return f.onmessage=async g=>{let{url:m,result:p}=g.data;p?d.get(m)?.resolve?.(p):d.get(m)?.reject?.(new Error(`Error receiving message from worker: ${m}`))},f.onmessageerror=g=>{let{url:m}=g.data;d.get(m)?.reject?.(new Error(`Error receiving message from worker: ${m}`))},f}catch(f){return l.log.warn("Failed to new Worker",f),null}}).filter(Boolean),fontFamilies:new Map,fontCssTexts:new Map,acceptOfImage:`${[Je(o)&&"image/webp","image/svg+xml","image/*","*/*"].filter(Boolean).join(",")};q=0.8`,requests:d,drawImageCount:0,tasks:[],features:a,isEnable:f=>f==="restoreScrollPosition"?typeof a=="boolean"?!1:a[f]??!1:typeof a=="boolean"?a:a[f]??!0};l.log.time("wait until load"),await rt(e,{timeout:l.timeout,onWarn:l.log.warn}),l.log.timeEnd("wait until load");let{width:u,height:h}=at(e,l);return l.width=u,l.height=h,l}function fe(e){if(!e)return;let t=e.createElement("style"),n=t.ownerDocument.createTextNode(`
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+
+        .min-h-screen {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #app-name {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        #tagline {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .editor-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .toolbar {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .toolbar button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .toolbar button:hover {
+            background: #dee2e6;
+            transform: translateY(-1px);
+        }
+
+        .toolbar button.active {
+            background: #007bff;
+            color: white;
+        }
+
+        .toolbar button.export {
+            background: #28a745;
+            color: white;
+            margin-left: auto;
+        }
+
+        .toolbar button.export:hover {
+            background: #218838;
+        }
+
+        .toolbar button.direction {
+            background: #6f42c1;
+            color: white;
+        }
+
+        .toolbar button.direction:hover {
+            background: #5a2d91;
+        }
+
+        #editor {
+            min-height: 500px;
+            padding: 2rem;
+            outline: none;
+            font-family: "Courier New", monospace;
+            font-size: 12pt;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .scene-heading {
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 1.5rem 0 1rem 0;
+            color: #007bff;
+        }
+
+        .action {
+            margin: 1rem 0;
+            text-align: justify;
+        }
+
+        .character {
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 1.5rem 0 0.5rem 3.5in;
+            text-align: center;
+            width: 2in;
+        }
+
+        .dialogue {
+            margin: 0.5rem 0 1rem 2.5in;
+            width: 3.5in;
+        }
+
+        .parenthetical {
+            margin: 0.5rem 0;
+            margin-left: 3in;
+            width: 2in;
+            font-style: italic;
+        }
+
+        .transition {
+            font-weight: bold;
+            text-transform: uppercase;
+            text-align: right;
+            margin: 1rem 0;
+        }
+
+        /* RTL Support */
+        .rtl {
+            direction: rtl;
+            text-align: right;
+        }
+
+        .rtl .character {
+            margin-right: 3.5in;
+            margin-left: 0;
+            text-align: center;
+        }
+
+        .rtl .dialogue {
+            margin-right: 2.5in;
+            margin-left: 0;
+        }
+
+        .rtl .parenthetical {
+            margin-right: 3in;
+            margin-left: 0;
+        }
+
+        .rtl .transition {
+            text-align: left;
+        }
+
+        /* Feedback and Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal h2 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .modal input,
+        .modal textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-family: inherit;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 1rem;
+            border-radius: 6px;
+            z-index: 1001;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .notification.show {
+            opacity: 1;
+        }
+
+        /* Character suggestions */
+        .character-suggestions {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .character-suggestion {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+
+        .character-suggestion:hover {
+            background: #f8f9fa;
+        }
+
+        .character-suggestion:last-child {
+            border-bottom: none;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            #app-name {
+                font-size: 2rem;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            #editor {
+                padding: 1rem;
+                font-size: 11pt;
+            }
+
+            .character,
+            .dialogue,
+            .parenthetical {
+                margin-left: 1rem;
+                width: auto;
+            }
+
+            .rtl .character,
+            .rtl .dialogue,
+            .rtl .parenthetical {
+                margin-right: 1rem;
+                margin-left: 0;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen">
+        <div id="header">
+            <div id="app-name">Fade Out</div>
+            <div id="tagline">Write, Rewrite, Fade Out</div>
+        </div>
+
+        <div class="main-content">
+            <div class="editor-container">
+                <div class="toolbar">
+                    <button type="button" class="element-btn active" data-element="scene-heading">Scene Heading</button>
+                    <button type="button" class="element-btn" data-element="action">Action</button>
+                    <button type="button" class="element-btn" data-element="character">Character</button>
+                    <button type="button" class="element-btn" data-element="dialogue">Dialogue</button>
+                    <button type="button" class="element-btn" data-element="parenthetical">Parenthetical</button>
+                    <button type="button" class="element-btn" data-element="transition">Transition</button>
+                    <button type="button" class="direction" onclick="toggleDirection()">RTL/LTR</button>
+                    <button type="button" onclick="saveScript()">Save</button>
+                    <button type="button" onclick="loadScript()">Load</button>
+                    <button type="button" onclick="shareScript()">Share</button>
+                    <button type="button" class="export" onclick="exportScript()">Export</button>
+                </div>
+
+                <div id="editor" contenteditable="true">
+                    <div class="scene-heading">FADE IN:</div>
+                    <div class="action">Welcome to Fade Out - Your professional screenplay editor with bilingual support.</div>
+                    <div class="action">Click here to start writing your screenplay. Use the toolbar above to change element types.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="saveModal" class="modal-overlay hidden">
+        <div class="modal">
+            <h2>Save Script</h2>
+            <input type="text" id="saveTitle" placeholder="Script title">
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeSaveModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmSave()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loadModal" class="modal-overlay hidden">
+        <div class="modal">
+            <h2>Load Script</h2>
+            <div id="scriptList"></div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeLoadModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="shareModal" class="modal-overlay hidden">
+        <div class="modal">
+            <h2>Share Script</h2>
+            <p>Your script has been saved. Share this link:</p>
+            <input type="text" id="shareLink" readonly>
+            <textarea placeholder="Add feedback (optional)" id="feedbackText"></textarea>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeShareModal()">Close</button>
+                <button class="btn btn-primary" onclick="copyShareLink()">Copy Link</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Global state
+        let currentElement = 'scene-heading';
+        let isRtl = false;
+        let scriptCharacters = new Set();
+        let scripts = JSON.parse(localStorage.getItem('fadeOutScripts') || '{}');
+
+        // Editor reference
+        const editor = document.getElementById('editor');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            updateToolbarState();
+        });
+
+        function setupEventListeners() {
+            // Toolbar buttons
+            document.querySelectorAll('.element-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    setCurrentElement(this.dataset.element);
+                });
+            });
+
+            // Editor events
+            editor.addEventListener('keydown', handleKeyDown);
+            editor.addEventListener('click', handleClick);
+            editor.addEventListener('input', extractCharacters);
+
+            // Modal close on overlay click
+            document.querySelectorAll('.modal-overlay').forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        this.classList.add('hidden');
+                    }
+                });
+            });
+        }
+
+        function setCurrentElement(elementType) {
+            currentElement = elementType;
+            updateToolbarState();
+        }
+
+        function updateToolbarState() {
+            document.querySelectorAll('.element-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.element === currentElement);
+            });
+        }
+
+        function handleKeyDown(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addNewElement();
+            } else if (e.key === 'Tab') {
+                e.preventDefault();
+                cycleElementType();
+            }
+        }
+
+        function handleClick(e) {
+            const element = e.target.closest('[class*="scene-heading"], [class*="action"], [class*="character"], [class*="dialogue"], [class*="parenthetical"], [class*="transition"]');
+            if (element) {
+                const className = element.className;
+                if (className.includes('scene-heading')) setCurrentElement('scene-heading');
+                else if (className.includes('action')) setCurrentElement('action');
+                else if (className.includes('character')) setCurrentElement('character');
+                else if (className.includes('dialogue')) setCurrentElement('dialogue');
+                else if (className.includes('parenthetical')) setCurrentElement('parenthetical');
+                else if (className.includes('transition')) setCurrentElement('transition');
+            }
+        }
+
+        function addNewElement(text = '') {
+            const div = document.createElement('div');
+            div.className = currentElement;
+            div.textContent = text || '\u00A0'; // Non-breaking space
+            
+            const selection = window.getSelection();
+            const range = selection.getRangeAt(0);
+            range.deleteContents();
+            range.insertNode(div);
+            
+            // Position cursor at end of new element
+            const newRange = document.createRange();
+            newRange.selectNodeContents(div);
+            newRange.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+            
+            scrollToElement(div);
+        }
+
+        function cycleElementType() {
+            const types = ['scene-heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'];
+            const currentIndex = types.indexOf(currentElement);
+            const nextIndex = (currentIndex + 1) % types.length;
+            setCurrentElement(types[nextIndex]);
+        }
+
+        function scrollToElement(element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function extractCharacters() {
+            document.querySelectorAll('.character').forEach(el => {
+                const text = el.textContent.trim();
+                if (text && text !== '\u00A0') {
+                    scriptCharacters.add(text);
+                }
+            });
+        }
+
+        function toggleDirection() {
+            isRtl = !isRtl;
+            editor.classList.toggle('rtl', isRtl);
+            showNotification(`Direction changed to ${isRtl ? 'RTL' : 'LTR'}`);
+        }
+
+        function saveScript() {
+            document.getElementById('saveModal').classList.remove('hidden');
+        }
+
+        function closeSaveModal() {
+            document.getElementById('saveModal').classList.add('hidden');
+            document.getElementById('saveTitle').value = '';
+        }
+
+        function confirmSave() {
+            const title = document.getElementById('saveTitle').value.trim();
+            if (!title) {
+                showNotification('Please enter a script title', 'error');
+                return;
+            }
+
+            const scriptData = {
+                content: editor.innerHTML,
+                characters: Array.from(scriptCharacters),
+                timestamp: Date.now(),
+                direction: isRtl ? 'rtl' : 'ltr'
+            };
+
+            scripts[title] = scriptData;
+            localStorage.setItem('fadeOutScripts', JSON.stringify(scripts));
+            
+            closeSaveModal();
+            showNotification(`Script "${title}" saved successfully!`);
+        }
+
+        function loadScript() {
+            const scriptList = document.getElementById('scriptList');
+            scriptList.innerHTML = '';
+
+            if (Object.keys(scripts).length === 0) {
+                scriptList.innerHTML = '<p>No saved scripts found.</p>';
+            } else {
+                Object.entries(scripts).forEach(([title, data]) => {
+                    const div = document.createElement('div');
+                    div.style.cssText = 'padding: 0.5rem; border: 1px solid #ddd; margin-bottom: 0.5rem; border-radius: 4px; cursor: pointer;';
+                    div.innerHTML = `
+                        <strong>${title}</strong><br>
+                        <small>Saved: ${new Date(data.timestamp).toLocaleString()}</small>
+                    `;
+                    div.onclick = () => {
+                        editor.innerHTML = data.content;
+                        scriptCharacters = new Set(data.characters || []);
+                        isRtl = data.direction === 'rtl';
+                        editor.classList.toggle('rtl', isRtl);
+                        closeLoadModal();
+                        showNotification(`Script "${title}" loaded successfully!`);
+                    };
+                    scriptList.appendChild(div);
+                });
+            }
+
+            document.getElementById('loadModal').classList.remove('hidden');
+        }
+
+        function closeLoadModal() {
+            document.getElementById('loadModal').classList.add('hidden');
+        }
+
+        function shareScript() {
+            // Generate a simple share ID
+            const shareId = 'script_' + Date.now();
+            const shareLink = `${window.location.origin}#${shareId}`;
+            
+            document.getElementById('shareLink').value = shareLink;
+            document.getElementById('shareModal').classList.remove('hidden');
+            
+            // Save to shared scripts (in real app, this would go to server)
+            const sharedScripts = JSON.parse(localStorage.getItem('sharedScripts') || '{}');
+            sharedScripts[shareId] = {
+                content: editor.innerHTML,
+                characters: Array.from(scriptCharacters),
+                direction: isRtl ? 'rtl' : 'ltr',
+                timestamp: Date.now()
+            };
+            localStorage.setItem('sharedScripts', JSON.stringify(sharedScripts));
+        }
+
+        function closeShareModal() {
+            document.getElementById('shareModal').classList.add('hidden');
+        }
+
+        function copyShareLink() {
+            const shareLink = document.getElementById('shareLink');
+            shareLink.select();
+            shareLink.setSelectionRange(0, 99999);
+            
+            try {
+                document.execCommand('copy');
+                showNotification('Share link copied to clipboard!');
+            } catch (err) {
+                showNotification('Failed to copy link', 'error');
+            }
+        }
+
+        function exportScript() {
+            const content = editor.innerHTML;
+            const blob = new Blob([content], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'screenplay.html';
+            a.click();
+            URL.revokeObjectURL(url);
+            showNotification('Script exported successfully!');
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.background = type === 'error' ? '#dc3545' : '#28a745';
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Load shared script if hash is present
+        window.addEventListener('load', function() {
+            const hash = window.location.hash.slice(1);
+            if (hash.startsWith('script_')) {
+                const sharedScripts = JSON.parse(localStorage.getItem('sharedScripts') || '{}');
+                const sharedScript = sharedScripts[hash];
+                if (sharedScript) {
+                    editor.innerHTML = sharedScript.content;
+                    scriptCharacters = new Set(sharedScript.characters || []);
+                    isRtl = sharedScript.direction === 'rtl';
+                    editor.classList.toggle('rtl', isRtl);
+                    showNotification('Shared script loaded!');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
