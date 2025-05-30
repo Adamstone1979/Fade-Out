@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fade Out - Professional Screenplay Editor</title>
   <style>
-    /* Dark Theme & Typography (UNCHANGED) */
+    /* Dark Theme & Typography */
     body {
       background-color: #1c0f2e;
       color: white;
@@ -19,7 +19,7 @@
       color: #000000;
     }
 
-    /* App Header (UNCHANGED) */
+    /* App Header */
     .app-header {
       position: fixed;
       top: 0;
@@ -45,7 +45,7 @@
       opacity: 0.8;
     }
 
-    /* Toolbar (Updated with new buttons) */
+    /* Toolbar */
     .toolbar {
       position: fixed;
       top: 70px;
@@ -61,14 +61,14 @@
       gap: 5px;
     }
 
-    /* Toolbar Groups (UNCHANGED) */
+    /* Toolbar Groups */
     .toolbar-group {
       display: flex;
       flex-wrap: wrap;
       gap: 5px;
     }
 
-    /* Editor (UNCHANGED) */
+    /* Editor */
     #editor {
       padding: 130px 20px 20px 20px;
       outline: none;
@@ -76,14 +76,19 @@
       min-height: 80vh;
     }
 
-    /* Title Page Styles (NEW) */
+    /* Title Page Styles (Final Draft format) */
     .title-page {
       display: none;
-      padding: 130px 20px 20px 20px;
+      padding: 180px 20px 20px 20px; /* Extra top padding to avoid toolbar overlap */
       text-align: center;
     }
     
-    .title-page input {
+    .title-page-content {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .title-page input, .title-page textarea {
       background: transparent;
       border: none;
       border-bottom: 1px solid gold;
@@ -91,16 +96,33 @@
       font-family: inherit;
       font-size: inherit;
       text-align: center;
-      width: 80%;
-      margin: 10px auto;
+      width: 100%;
+      margin: 15px auto;
       padding: 5px;
     }
     
-    .title-page input:focus {
-      outline: none;
+    .title-page .title {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 40px;
+    }
+    
+    .title-page .author {
+      font-size: 20px;
+      margin-bottom: 60px;
+    }
+    
+    .title-page .contact {
+      font-size: 16px;
+      margin-top: 100px;
+    }
+    
+    .title-page .copyright {
+      font-size: 12px;
+      margin-top: 120px;
     }
 
-    /* RTL Fixes (UNCHANGED) */
+    /* RTL Fixes */
     body[dir="rtl"] .toolbar {
       direction: rtl;
     }
@@ -113,7 +135,7 @@
       direction: rtl;
     }
 
-    /* Element Styles (UNCHANGED) */
+    /* Element Styles */
     .element { margin: 0; padding: 2px 0; }
     .scene-heading { text-transform: uppercase; margin: 12px 0; text-align: left; font-weight: bold; }
     .action { text-align: left; margin: 12px 0; }
@@ -123,7 +145,7 @@
     .transition { text-align: right; margin-right: 10%; font-weight: bold; text-transform: uppercase; }
     .active-line { background-color: rgba(255, 215, 0, 0.1); }
 
-    /* Light Mode (UNCHANGED) */
+    /* Light Mode */
     body.light .toolbar {
       background-color: #e3e3e3;
       border-bottom: 2px solid #cccccc;
@@ -148,7 +170,7 @@
       background-color: #6b458e;
     }
 
-    /* Character suggestions (UNCHANGED) */
+    /* Character suggestions */
     #character-suggestions {
       position: absolute;
       background-color: #2a1240;
@@ -178,7 +200,7 @@
       background-color: #cccccc;
     }
 
-    /* Notification (UNCHANGED) */
+    /* Notification */
     #notification {
       position: fixed;
       bottom: 20px;
@@ -191,7 +213,7 @@
       z-index: 100;
     }
 
-    /* Modals (UNCHANGED) */
+    /* Modals */
     .modal-container {
       display: none;
       position: fixed;
@@ -279,7 +301,7 @@
       color: white;
     }
 
-    /* Feedback box (UPDATED) */
+    /* Feedback box */
     #feedback-box {
       display: none;
       margin: 10px;
@@ -319,7 +341,7 @@
       color: white;
     }
     
-    /* Transition dropdown (FIXED) */
+    /* Transition dropdown */
     #transition-dropdown {
       position: absolute;
       background-color: #2a1240;
@@ -351,7 +373,7 @@
       background-color: #ddd;
     }
 
-    /* Spellcheck Underline (NEW) */
+    /* Spellcheck Underline */
     .spell-error {
       text-decoration: underline wavy red;
     }
@@ -359,11 +381,21 @@
     .grammar-error {
       text-decoration: underline wavy orange;
     }
+    
+    /* Thesaurus/Dictionary Results */
+    .word-result {
+      margin-bottom: 15px;
+    }
+    
+    .word-type {
+      font-style: italic;
+      color: gold;
+    }
+    
+    body.light .word-type {
+      color: #000000;
+    }
   </style>
-  <!-- Firebase (Optional for cloud sync) -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 </head>
 <body class="dark-mode">
   <!-- Header -->
@@ -372,7 +404,7 @@
     <div class="tagline">Write. Rewrite. Fade Out.</div>
   </div>
 
-  <!-- Toolbar (Updated with new buttons) -->
+  <!-- Toolbar -->
   <div class="toolbar">
     <div>
       <button id="title-page-btn">TITLE PAGE</button>
@@ -397,15 +429,27 @@
     </div>
   </div>
 
-  <!-- Title Page (NEW) -->
+  <!-- Title Page (Final Draft format) -->
   <div id="title-page" class="title-page">
-    <input type="text" id="script-title" placeholder="TITLE">
-    <input type="text" id="written-by" placeholder="Written by">
-    <input type="text" id="contact-email" placeholder="Email (e.g., yourname@example.com)">
-    <input type="text" id="contact-phone" placeholder="Phone">
-    <input type="text" id="awards" placeholder="Accolades/Awards">
-    <div style="margin-top: 30px; font-size: 12px;">All copyrights reserved</div>
-    <button id="start-writing-btn" style="margin-top: 20px;">START WRITING</button>
+    <div class="title-page-content">
+      <div class="title">
+        <input type="text" id="script-title" placeholder="TITLE OF SCRIPT">
+      </div>
+      <div class="author">
+        <input type="text" id="written-by" placeholder="Written by">
+      </div>
+      <div class="contact">
+        <input type="text" id="contact-email" placeholder="Email">
+        <input type="text" id="contact-phone" placeholder="Phone">
+      </div>
+      <div>
+        <textarea id="awards" placeholder="Accolades/Awards" rows="3"></textarea>
+      </div>
+      <div class="copyright">
+        All copyrights reserved
+      </div>
+      <button id="start-writing-btn">START WRITING</button>
+    </div>
   </div>
 
   <!-- Editor (Starts blank) -->
@@ -437,46 +481,22 @@
     <button id="send-feedback-btn">Send Feedback</button>
   </div>
   
-  <!-- Save Modal -->
-  <div class="modal-container" id="save-modal-container">
-    <div class="modal">
-      <h2>Save Script</h2>
-      <input type="text" id="script-save-title" placeholder="Script Title">
-      <div class="modal-buttons">
-        <button class="cancel-btn" id="save-cancel">Cancel</button>
-        <button class="confirm-btn" id="save-confirm">Save</button>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Load Modal -->
-  <div class="modal-container" id="load-modal-container">
-    <div class="modal">
-      <h2>Load Script</h2>
-      <div id="saved-scripts-list" style="max-height: 200px; overflow-y: auto; margin: 10px 0;"></div>
-      <div class="modal-buttons">
-        <button class="cancel-btn" id="load-cancel">Cancel</button>
-        <button class="confirm-btn" id="load-confirm">Load</button>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Thesaurus Modal (NEW) -->
+  <!-- Thesaurus Modal -->
   <div class="modal-container" id="thesaurus-modal-container">
     <div class="modal">
       <h2>Thesaurus</h2>
-      <div id="thesaurus-results" style="max-height: 300px; overflow-y: auto;"></div>
+      <div id="thesaurus-results"></div>
       <div class="modal-buttons">
         <button class="cancel-btn" id="thesaurus-cancel">Close</button>
       </div>
     </div>
   </div>
   
-  <!-- Dictionary Modal (NEW) -->
+  <!-- Dictionary Modal -->
   <div class="modal-container" id="dictionary-modal-container">
     <div class="modal">
       <h2>Dictionary</h2>
-      <div id="dictionary-results" style="max-height: 300px; overflow-y: auto;"></div>
+      <div id="dictionary-results"></div>
       <div class="modal-buttons">
         <button class="cancel-btn" id="dictionary-cancel">Close</button>
       </div>
@@ -488,110 +508,259 @@
     // INITIALIZATION
     // ========================
     document.addEventListener('DOMContentLoaded', function() {
-      // Show title page first
+      // Start with title page
       showTitlePage();
       
-      // Initialize Firebase (UNCOMMENT IF USING CLOUD SYNC)
-      // initFirebase();
-      
-      // Set up the rest of the app
-      setupApp();
+      // Initialize editor
+      initEditor();
     });
 
     // ========================
-    // CORE FUNCTIONALITY
+    // CORE EDITOR FUNCTIONALITY
     // ========================
-    function setupApp() {
-      // Initialize elements
+    function initEditor() {
+      // Arabic translations
+      const arabicLabels = {
+        'SCENE HEADING': 'العنوان الرئيسي',
+        'ACTION': 'الفعل',
+        'CHARACTER': 'الشخصية',
+        'DIALOGUE': 'الحوار',
+        'PARENTHETICAL': 'توضيح',
+        'TRANSITION': 'الانتقال',
+        'TITLE PAGE': 'صفحة العنوان',
+        'UNDO': 'تراجع',
+        'REDO': 'إعادة',
+        'THESAURUS': 'المعجم',
+        'DICTIONARY': 'القاموس',
+        'SAVE': 'حفظ',
+        'LOAD': 'تحميل',
+        'EXPORT': 'تصدير',
+        'FEEDBACK': 'تعليق',
+        'ARABIC': 'English',
+        'ENGLISH': 'عربي',
+        'LIGHT': 'مضيء',
+        'DARK': 'مظلم'
+      };
+
+      // Global state
+      let currentElement = 'scene-heading';
+      let isRtlMode = false;
+      let scriptCharacters = new Set();
+      let undoStack = [];
+      let redoStack = [];
+      let isUndoing = false;
+
+      // DOM elements
       const editor = document.getElementById('editor');
       const notification = document.getElementById('notification');
-      
-      // Start with a blank editor
-      editor.innerHTML = '';
-      
-      // Set up event listeners
-      setupListeners();
-      
-      // Initialize undo/redo stack
-      initUndoRedo();
-      
-      // Set up spellcheck
-      initSpellCheck();
-    }
+      const titlePageBtn = document.getElementById('title-page-btn');
 
-    // ========================
-    // TITLE PAGE
-    // ========================
-    function showTitlePage() {
-      document.getElementById('title-page').style.display = 'block';
-      document.getElementById('editor').style.display = 'none';
-      
-      // Focus on title field
-      document.getElementById('script-title').focus();
-      
-      // Start writing button
-      document.getElementById('start-writing-btn').addEventListener('click', function() {
+      // Start with blank editor
+      editor.innerHTML = '';
+
+      // ========================
+      // TITLE PAGE FUNCTIONALITY
+      // ========================
+      function showTitlePage() {
+        document.getElementById('title-page').style.display = 'block';
+        document.getElementById('editor').style.display = 'none';
+        document.getElementById('script-title').focus();
+      }
+
+      function hideTitlePage() {
         document.getElementById('title-page').style.display = 'none';
         document.getElementById('editor').style.display = 'block';
-        
-        // Add first scene heading
         addNewElement('scene-heading');
+      }
+
+      titlePageBtn.addEventListener('click', function() {
+        showTitlePage();
       });
-    }
 
-    // ========================
-    // TRANSITION DROPDOWN (FIXED)
-    // ========================
-    function showTransitionDropdown(element) {
-      const dropdown = document.getElementById('transition-dropdown');
-      if (!dropdown) return;
-      
-      // Position the dropdown
-      const rect = element.getBoundingClientRect();
-      dropdown.style.top = `${rect.bottom + window.scrollY}px`;
-      dropdown.style.left = `${rect.left + window.scrollX}px`;
-      
-      // Show the dropdown
-      dropdown.style.display = 'block';
-      
-      // Close when clicked outside
-      setTimeout(() => {
-        document.addEventListener('click', closeTransitionDropdown);
-      }, 10);
-    }
+      document.getElementById('start-writing-btn').addEventListener('click', function() {
+        hideTitlePage();
+      });
 
-    function closeTransitionDropdown(e) {
-      const dropdown = document.getElementById('transition-dropdown');
-      if (!dropdown.contains(e.target)) {
-        dropdown.style.display = 'none';
+      // ========================
+      // ARABIC/ENGLISH TOGGLE
+      // ========================
+      document.getElementById('rtl-toggle').addEventListener('click', function() {
+        isRtlMode = !isRtlMode;
+        
+        if (isRtlMode) {
+          // Switch to Arabic
+          document.body.setAttribute('dir', 'rtl');
+          editor.classList.add('rtl');
+          editor.classList.remove('ltr');
+          this.textContent = arabicLabels['ARABIC'];
+          updateToolbarLabels(true);
+        } else {
+          // Switch to English
+          document.body.removeAttribute('dir');
+          editor.classList.remove('rtl');
+          editor.classList.add('ltr');
+          this.textContent = 'ARABIC';
+          updateToolbarLabels(false);
+        }
+      });
+
+      function updateToolbarLabels(useArabic) {
+        document.querySelectorAll('.element-button').forEach(btn => {
+          const type = btn.dataset.type;
+          btn.textContent = useArabic ? arabicLabels[type.replace('-', ' ').toUpperCase()] : type.replace('-', ' ').toUpperCase();
+        });
+        
+        document.getElementById('title-page-btn').textContent = useArabic ? arabicLabels['TITLE PAGE'] : 'TITLE PAGE';
+        document.getElementById('undo-btn').textContent = useArabic ? arabicLabels['UNDO'] : 'UNDO';
+        document.getElementById('redo-btn').textContent = useArabic ? arabicLabels['REDO'] : 'REDO';
+        document.getElementById('thesaurus-btn').textContent = useArabic ? arabicLabels['THESAURUS'] : 'THESAURUS';
+        document.getElementById('dictionary-btn').textContent = useArabic ? arabicLabels['DICTIONARY'] : 'DICTIONARY';
+        document.getElementById('save-btn').textContent = useArabic ? arabicLabels['SAVE'] : 'SAVE';
+        document.getElementById('load-btn').textContent = useArabic ? arabicLabels['LOAD'] : 'LOAD';
+        document.getElementById('export-btn').textContent = useArabic ? arabicLabels['EXPORT'] : 'EXPORT';
+        document.getElementById('feedback-btn').textContent = useArabic ? arabicLabels['FEEDBACK'] : 'FEEDBACK';
+        
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.textContent = document.body.classList.contains('light') ? 
+          (useArabic ? arabicLabels['DARK'] : 'DARK') : 
+          (useArabic ? arabicLabels['LIGHT'] : 'LIGHT');
+      }
+
+      // ========================
+      // EDITOR FUNCTIONALITY
+      // ========================
+      function addNewElement(type, text = '') {
+        const div = document.createElement('div');
+        div.className = `element ${type}`;
+        div.id = `element-${Date.now()}`;
+        
+        if (isRtlMode) {
+          div.setAttribute('dir', 'rtl');
+          div.setAttribute('lang', 'ar');
+          if (type === 'scene-heading' || type === 'action') {
+            div.style.textAlign = 'right';
+          } else if (type === 'transition') {
+            div.style.textAlign = 'left';
+          }
+        } else {
+          if (type === 'transition') {
+            div.style.textAlign = 'right';
+          }
+        }
+        
+        if (type === 'scene-heading' && !text) {
+          div.textContent = isRtlMode ? '.INT ' : 'INT. ';
+        } else if (type === 'parenthetical' && !text) {
+          div.textContent = '()';
+        } else if (text) {
+          div.textContent = text;
+        } else {
+          div.innerHTML = '&nbsp;';
+        }
+        
+        const activeElement = document.querySelector('.active-line');
+        if (activeElement) {
+          activeElement.classList.remove('active-line');
+          activeElement.after(div);
+        } else {
+          editor.appendChild(div);
+        }
+        
+        div.classList.add('active-line');
+        setCaretToEnd(div);
+        
+        if (type === 'character') {
+          div.addEventListener('input', function() {
+            const text = this.textContent?.trim().toUpperCase() || '';
+            if (text.length > 0) {
+              showCharacterSuggestions(text, this);
+            } else {
+              hideCharacterSuggestions();
+            }
+          });
+        }
+        
+        if (type === 'transition') {
+          div.addEventListener('click', function(e) {
+            showTransitionDropdown(this);
+          });
+        }
+        
+        saveState();
+      }
+
+      // ========================
+      // TRANSITION DROPDOWN
+      // ========================
+      function showTransitionDropdown(element) {
+        const dropdown = document.getElementById('transition-dropdown');
+        const rect = element.getBoundingClientRect();
+        dropdown.style.top = `${rect.bottom + window.scrollY}px`;
+        dropdown.style.left = `${rect.left + window.scrollX}px`;
+        dropdown.style.display = 'block';
+        
+        setTimeout(() => {
+          document.addEventListener('click', closeTransitionDropdown);
+        }, 10);
+      }
+
+      function closeTransitionDropdown(e) {
+        const dropdown = document.getElementById('transition-dropdown');
+        if (!dropdown.contains(e.target)) {
+          dropdown.style.display = 'none';
+          document.removeEventListener('click', closeTransitionDropdown);
+        }
+      }
+
+      document.querySelectorAll('.transition-item').forEach(item => {
+        item.addEventListener('click', function() {
+          const activeElement = document.querySelector('.active-line');
+          if (activeElement && activeElement.classList.contains('transition')) {
+            activeElement.textContent = this.dataset.text;
+            hideTransitionDropdown();
+            setCaretToEnd(activeElement);
+            saveState();
+          }
+        });
+      });
+
+      function hideTransitionDropdown() {
+        document.getElementById('transition-dropdown').style.display = 'none';
         document.removeEventListener('click', closeTransitionDropdown);
       }
-    }
 
-    // ========================
-    // UNDO/REDO (NEW)
-    // ========================
-    let undoStack = [];
-    let redoStack = [];
-    let isUndoing = false;
-
-    function initUndoRedo() {
-      const editor = document.getElementById('editor');
-      
-      // Save state every 500ms
-      setInterval(() => {
+      // ========================
+      // UNDO/REDO FUNCTIONALITY
+      // ========================
+      function saveState() {
         if (!isUndoing) {
-          saveState();
+          undoStack.push(editor.innerHTML);
+          if (undoStack.length > 50) undoStack.shift();
+          redoStack = [];
         }
-      }, 500);
-      
-      // Undo button
+      }
+
+      function undo() {
+        if (undoStack.length > 0) {
+          isUndoing = true;
+          redoStack.push(editor.innerHTML);
+          editor.innerHTML = undoStack.pop();
+          isUndoing = false;
+        }
+      }
+
+      function redo() {
+        if (redoStack.length > 0) {
+          isUndoing = true;
+          undoStack.push(editor.innerHTML);
+          editor.innerHTML = redoStack.pop();
+          isUndoing = false;
+        }
+      }
+
       document.getElementById('undo-btn').addEventListener('click', undo);
-      
-      // Redo button
       document.getElementById('redo-btn').addEventListener('click', redo);
-      
-      // Keyboard shortcuts
+
       document.addEventListener('keydown', function(e) {
         if (e.ctrlKey && e.key === 'z') {
           e.preventDefault();
@@ -601,157 +770,193 @@
           redo();
         }
       });
-    }
 
-    function saveState() {
-      const editor = document.getElementById('editor');
-      undoStack.push(editor.innerHTML);
-      if (undoStack.length > 50) undoStack.shift(); // Limit stack size
-      redoStack = []; // Clear redo stack on new action
-    }
-
-    function undo() {
-      if (undoStack.length > 0) {
-        isUndoing = true;
-        const editor = document.getElementById('editor');
-        redoStack.push(editor.innerHTML);
-        editor.innerHTML = undoStack.pop();
-        isUndoing = false;
-      }
-    }
-
-    function redo() {
-      if (redoStack.length > 0) {
-        isUndoing = true;
-        const editor = document.getElementById('editor');
-        undoStack.push(editor.innerHTML);
-        editor.innerHTML = redoStack.pop();
-        isUndoing = false;
-      }
-    }
-
-    // ========================
-    // THESAURUS & DICTIONARY (NEW)
-    // ========================
-    document.getElementById('thesaurus-btn').addEventListener('click', function() {
-      const selection = window.getSelection();
-      const word = selection.toString().trim();
-      
-      if (word) {
-        showThesaurus(word);
-      } else {
-        showNotification('Select a word first');
-      }
-    });
-
-    document.getElementById('dictionary-btn').addEventListener('click', function() {
-      const selection = window.getSelection();
-      const word = selection.toString().trim();
-      
-      if (word) {
-        showDictionary(word);
-      } else {
-        showNotification('Select a word first');
-      }
-    });
-
-    function showThesaurus(word) {
-      // In a real app, this would call an API
-      const modal = document.getElementById('thesaurus-modal-container');
-      const results = document.getElementById('thesaurus-results');
-      
-      results.innerHTML = `
-        <h3>Synonyms for "${word}"</h3>
-        <ul>
-          <li>alternative</li>
-          <li>replacement</li>
-          <li>equivalent</li>
-        </ul>
-        <h3>Antonyms</h3>
-        <ul>
-          <li>opposite</li>
-          <li>contrary</li>
-        </ul>
-      `;
-      
-      modal.style.display = 'flex';
-    }
-
-    function showDictionary(word) {
-      // In a real app, this would call an API
-      const modal = document.getElementById('dictionary-modal-container');
-      const results = document.getElementById('dictionary-results');
-      
-      results.innerHTML = `
-        <h3>Definition of "${word}"</h3>
-        <p>A word that represents something.</p>
-        <h3>Examples</h3>
-        <p>"She used the ${word} in a sentence."</p>
-      `;
-      
-      modal.style.display = 'flex';
-    }
-
-    // ========================
-    // SPELL & GRAMMAR CHECK (NEW)
-    // ========================
-    function initSpellCheck() {
-      const editor = document.getElementById('editor');
-      
-      editor.addEventListener('input', function() {
-        // In a real app, this would call a spellcheck API
-        // This is a simplified version that marks "mispelled" as an error
-        const text = editor.innerText;
-        if (text.includes('mispelled')) {
-          // Would need more sophisticated logic for real implementation
-          showNotification('Potential spelling error detected');
+      // ========================
+      // THESAURUS & DICTIONARY
+      // ========================
+      document.getElementById('thesaurus-btn').addEventListener('click', function() {
+        const selection = window.getSelection();
+        const word = selection.toString().trim();
+        
+        if (word) {
+          showThesaurus(word);
+        } else {
+          showNotification(isRtlMode ? 'حدد كلمة أولاً' : 'Select a word first');
         }
       });
-    }
 
-    // ========================
-    // FEEDBACK TO EMAIL (NEW)
-    // ========================
-    document.getElementById('send-feedback-btn').addEventListener('click', function() {
-      const feedbackText = document.getElementById('feedback-text').value.trim();
-      
-      if (feedbackText) {
-        // In a real app, this would send to a server
-        const mailtoLink = `mailto:Adam.st@yahoo.com?subject=Fade%20Out%20Feedback&body=${encodeURIComponent(feedbackText)}`;
-        window.location.href = mailtoLink;
+      document.getElementById('dictionary-btn').addEventListener('click', function() {
+        const selection = window.getSelection();
+        const word = selection.toString().trim();
         
-        showNotification('Feedback sent!');
-        document.getElementById('feedback-text').value = '';
-        document.getElementById('feedback-box').style.display = 'none';
-      } else {
-        showNotification('Please enter feedback');
+        if (word) {
+          showDictionary(word);
+        } else {
+          showNotification(isRtlMode ? 'حدد كلمة أولاً' : 'Select a word first');
+        }
+      });
+
+      function showThesaurus(word) {
+        const modal = document.getElementById('thesaurus-modal-container');
+        const results = document.getElementById('thesaurus-results');
+        
+        // Simulate API call
+        setTimeout(() => {
+          if (isRtlMode) {
+            results.innerHTML = `
+              <div class="word-result">
+                <h3>مرادفات "${word}"</h3>
+                <ul>
+                  <li>مرادف</li>
+                  <li>بديل</li>
+                  <li>مكافئ</li>
+                </ul>
+                <h3>أضداد</h3>
+                <ul>
+                  <li>عكس</li>
+                  <li>نقيض</li>
+                </ul>
+              </div>
+            `;
+          } else {
+            results.innerHTML = `
+              <div class="word-result">
+                <h3>Synonyms for "${word}"</h3>
+                <ul>
+                  <li>alternative</li>
+                  <li>replacement</li>
+                  <li>equivalent</li>
+                </ul>
+                <h3>Antonyms</h3>
+                <ul>
+                  <li>opposite</li>
+                  <li>contrary</li>
+                </ul>
+              </div>
+            `;
+          }
+          modal.style.display = 'flex';
+        }, 300);
       }
-    });
 
-    // ========================
-    // FIREBASE CLOUD SYNC (OPTIONAL)
-    // ========================
-    function initFirebase() {
-      const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_AUTH_DOMAIN",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_STORAGE_BUCKET",
-        messagingSenderId: "YOUR_SENDER_ID",
-        appId: "YOUR_APP_ID"
-      };
-      
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.firestore();
-      
-      // Implement save/load from Firestore here
+      function showDictionary(word) {
+        const modal = document.getElementById('dictionary-modal-container');
+        const results = document.getElementById('dictionary-results');
+        
+        // Simulate API call
+        setTimeout(() => {
+          if (isRtlMode) {
+            results.innerHTML = `
+              <div class="word-result">
+                <h3>تعريف "${word}"</h3>
+                <p>كلمة تصف شيئاً ما.</p>
+                <h3>أمثلة</h3>
+                <p>"استخدمت الكلمة ${word} في جملة."</p>
+              </div>
+            `;
+          } else {
+            results.innerHTML = `
+              <div class="word-result">
+                <h3>Definition of "${word}"</h3>
+                <p>A word that represents something.</p>
+                <h3>Examples</h3>
+                <p>"She used the ${word} in a sentence."</p>
+              </div>
+            `;
+          }
+          modal.style.display = 'flex';
+        }, 300);
+      }
+
+      // Close modals
+      document.getElementById('thesaurus-cancel').addEventListener('click', function() {
+        document.getElementById('thesaurus-modal-container').style.display = 'none';
+      });
+
+      document.getElementById('dictionary-cancel').addEventListener('click', function() {
+        document.getElementById('dictionary-modal-container').style.display = 'none';
+      });
+
+      // ========================
+      // FEEDBACK FUNCTIONALITY
+      // ========================
+      document.getElementById('feedback-btn').addEventListener('click', function() {
+        document.getElementById('feedback-box').style.display = 'block';
+        document.getElementById('feedback-text').focus();
+      });
+
+      document.getElementById('send-feedback-btn').addEventListener('click', function() {
+        const feedbackText = document.getElementById('feedback-text').value.trim();
+        
+        if (feedbackText) {
+          const mailtoLink = `mailto:Adam.st@yahoo.com?subject=Fade%20Out%20Feedback&body=${encodeURIComponent(feedbackText)}`;
+          window.location.href = mailtoLink;
+          
+          showNotification(isRtlMode ? 'تم إرسال التعليقات!' : 'Feedback sent!');
+          document.getElementById('feedback-text').value = '';
+          document.getElementById('feedback-box').style.display = 'none';
+        } else {
+          showNotification(isRtlMode ? 'الرجاء إدخال تعليقات' : 'Please enter feedback');
+        }
+      });
+
+      // ========================
+      // UTILITY FUNCTIONS
+      // ========================
+      function setCaretToEnd(el) {
+        el.focus();
+        const range = document.createRange();
+        if (el.firstChild) {
+          range.setStart(el.firstChild, el.firstChild.textContent.length);
+        } else {
+          range.setStart(el, 0);
+        }
+        range.collapse(true);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+
+      function showNotification(message) {
+        notification.textContent = message;
+        notification.style.display = 'block';
+        setTimeout(() => {
+          notification.style.display = 'none';
+        }, 2000);
+      }
+
+      // ========================
+      // ELEMENT BUTTONS
+      // ========================
+      document.querySelectorAll('.element-button').forEach(btn => {
+        btn.addEventListener('click', function() {
+          currentElement = this.dataset.type;
+          document.querySelectorAll('.element-button').forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          addNewElement(currentElement);
+        });
+      });
+
+      // Theme toggle
+      document.getElementById('theme-toggle').addEventListener('click', function() {
+        document.body.classList.toggle('light');
+        this.textContent = document.body.classList.contains('light') ? 
+          (isRtlMode ? arabicLabels['DARK'] : 'DARK') : 
+          (isRtlMode ? arabicLabels['LIGHT'] : 'LIGHT');
+      });
+
+      // Initialize with blank scene heading
+      function startNewScript() {
+        editor.innerHTML = '';
+        addNewElement('scene-heading');
+      }
+
+      // Start writing button
+      document.getElementById('start-writing-btn').addEventListener('click', startNewScript);
+
+      // Initialize
+      startNewScript();
     }
-
-    // ========================
-    // REST OF YOUR ORIGINAL CODE
-    // (All your existing functions remain unchanged)
-    // ========================
-    // ... [Include all your original functions here] ...
   </script>
 </body>
 </html>
