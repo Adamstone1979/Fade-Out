@@ -1,661 +1,1402 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fade Out - Screenplay Editor</title>
-    <meta name="description" content="Fade Out - A professional screenplay editor with bilingual support for writing, formatting, and sharing scripts with industry-standard formatting.">
-    <meta property="og:title" content="Fade Out - Professional Screenplay Editor">
-    <meta property="og:description" content="Write, format, and share screenplays with industry-standard formatting. Bilingual support included.">
-    <meta property="og:type" content="website">
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #f8f9fa;
-        }
-
-        .min-h-screen {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        #header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            text-align: center;
-            padding: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        #app-name {
-            font-size: 3rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        #tagline {
-            font-size: 1.25rem;
-            opacity: 0.9;
-            font-weight: 300;
-        }
-
-        .main-content {
-            flex: 1;
-            padding: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .editor-container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        .toolbar {
-            background: #f8f9fa;
-            padding: 1rem;
-            border-bottom: 1px solid #e9ecef;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            align-items: center;
-        }
-
-        .toolbar button {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 0.875rem;
-            transition: all 0.2s ease;
-            background: #e9ecef;
-            color: #495057;
-        }
-
-        .toolbar button:hover {
-            background: #dee2e6;
-            transform: translateY(-1px);
-        }
-
-        .toolbar button.active {
-            background: #007bff;
-            color: white;
-        }
-
-        .toolbar button.export {
-            background: #28a745;
-            color: white;
-            margin-left: auto;
-        }
-
-        .toolbar button.export:hover {
-            background: #218838;
-        }
-
-        .toolbar button.direction {
-            background: #6f42c1;
-            color: white;
-        }
-
-        .toolbar button.direction:hover {
-            background: #5a2d91;
-        }
-
-        #editor {
-            min-height: 500px;
-            padding: 2rem;
-            outline: none;
-            font-family: "Courier New", monospace;
-            font-size: 12pt;
-            line-height: 1.6;
-            white-space: pre-wrap;
-        }
-
-        .scene-heading {
-            font-weight: bold;
-            text-transform: uppercase;
-            margin: 1.5rem 0 1rem 0;
-            color: #007bff;
-        }
-
-        .action {
-            margin: 1rem 0;
-            text-align: justify;
-        }
-
-        .character {
-            font-weight: bold;
-            text-transform: uppercase;
-            margin: 1.5rem 0 0.5rem 3.5in;
-            text-align: center;
-            width: 2in;
-        }
-
-        .dialogue {
-            margin: 0.5rem 0 1rem 2.5in;
-            width: 3.5in;
-        }
-
-        .parenthetical {
-            margin: 0.5rem 0;
-            margin-left: 3in;
-            width: 2in;
-            font-style: italic;
-        }
-
-        .transition {
-            font-weight: bold;
-            text-transform: uppercase;
-            text-align: right;
-            margin: 1rem 0;
-        }
-
-        /* RTL Support */
-        .rtl {
-            direction: rtl;
-            text-align: right;
-        }
-
-        .rtl .character {
-            margin-right: 3.5in;
-            margin-left: 0;
-            text-align: center;
-        }
-
-        .rtl .dialogue {
-            margin-right: 2.5in;
-            margin-left: 0;
-        }
-
-        .rtl .parenthetical {
-            margin-right: 3in;
-            margin-left: 0;
-        }
-
-        .rtl .transition {
-            text-align: left;
-        }
-
-        /* Feedback and Modal Styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-
-        .modal {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal h2 {
-            margin-bottom: 1rem;
-            color: #333;
-        }
-
-        .modal input,
-        .modal textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            margin-bottom: 1rem;
-            font-family: inherit;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 0.5rem;
-            justify-content: flex-end;
-        }
-
-        .btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .btn-primary {
-            background: #007bff;
-            color: white;
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #28a745;
-            color: white;
-            padding: 1rem;
-            border-radius: 6px;
-            z-index: 1001;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .notification.show {
-            opacity: 1;
-        }
-
-        /* Character suggestions */
-        .character-suggestions {
-            position: absolute;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 100;
-        }
-
-        .character-suggestion {
-            padding: 0.5rem 1rem;
-            cursor: pointer;
-            border-bottom: 1px solid #eee;
-        }
-
-        .character-suggestion:hover {
-            background: #f8f9fa;
-        }
-
-        .character-suggestion:last-child {
-            border-bottom: none;
-        }
-
-        /* Responsive design */
-        @media (max-width: 768px) {
-            #app-name {
-                font-size: 2rem;
-            }
-
-            .main-content {
-                padding: 1rem;
-            }
-
-            #editor {
-                padding: 1rem;
-                font-size: 11pt;
-            }
-
-            .character,
-            .dialogue,
-            .parenthetical {
-                margin-left: 1rem;
-                width: auto;
-            }
-
-            .rtl .character,
-            .rtl .dialogue,
-            .rtl .parenthetical {
-                margin-right: 1rem;
-                margin-left: 0;
-            }
-        }
-
-        .hidden {
-            display: none;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fade Out</title>
+  <style>
+    :root {
+      --dark-bg: #0e0011;
+      --light-bg: #f8f8f8;
+      --dark-text: #ffffff;
+      --light-text: #000000;
+      --gold: #ffd700;
+      --highlight: rgba(218, 165, 32, 0.1);
+    }
+    
+    body {
+      margin: 0;
+      font-family: 'Courier New', monospace;
+      background-color: var(--dark-bg);
+      color: var(--dark-text);
+      transition: all 0.3s ease;
+      overflow-y: auto;
+    }
+    
+    body.light {
+      background-color: var(--light-bg);
+      color: var(--light-text);
+    }
+    
+    #header,
+    #app-name,
+    #tagline {
+      direction: ltr !important;
+      text-align: center !important;
+    }
+    
+    #header {
+      position: relative;
+      z-index: 3;
+      text-align: center;
+      padding: 20px 10px 5px;
+      background-color: inherit;
+    }
+    
+    #app-name {
+      font-size: 30px;
+      font-weight: bold;
+      color: var(--gold);
+    }
+    
+    #tagline {
+      font-size: 14px;
+      font-style: italic;
+      color: var(--dark-text);
+    }
+    
+    body.light #app-name {
+      color: var(--light-text);
+    }
+    
+    body.light #tagline {
+      color: var(--light-text);
+    }
+    
+    #toolbar-container {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background-color: rgba(0,0,0,0.2);
+      padding: 5px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    body.light #toolbar-container {
+      background-color: rgba(0,0,0,0.05);
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    .toolbar-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 5px 0;
+    }
+    
+    .toolbar-row button {
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      margin: 3px;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 3px;
+      min-width: 100px;
+    }
+    
+    body.light .toolbar-row button {
+      border-color: var(--light-text);
+      color: var(--light-text);
+    }
+    
+    .toolbar-row button.element-active {
+      background-color: var(--gold);
+      color: var(--dark-bg);
+    }
+    
+    body.light .toolbar-row button.element-active {
+      background-color: var(--light-text);
+      color: var(--light-bg);
+    }
+    
+    /* Character suggestion styling */
+    .character-suggestion {
+      position: absolute;
+      background-color: var(--dark-bg);
+      border: 1px solid var(--gold);
+      color: var(--dark-text);
+      z-index: 20;
+      border-radius: 4px;
+      max-height: 150px;
+      overflow-y: auto;
+      width: 200px;
+      display: none;
+    }
+    
+    body.light .character-suggestion {
+      background-color: var(--light-bg);
+      border-color: var(--light-text);
+      color: var(--light-text);
+    }
+    
+    .character-suggestion-item {
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+    
+    .character-suggestion-item:hover {
+      background-color: #444;
+    }
+    
+    .character-suggestion-item.active {
+      background-color: var(--gold);
+      color: var(--dark-bg);
+    }
+    
+    body.light .character-suggestion-item.active {
+      background-color: var(--light-text);
+      color: var(--light-bg);
+    }
+    
+    #editor {
+      padding: 2.5cm 3cm;
+      max-width: 21cm;
+      margin: 0 auto;
+      min-height: 70vh;
+      outline: none;
+      direction: ltr;
+      text-align: left;
+      white-space: pre-wrap;
+      font-size: 12pt;
+      line-height: 1.2;
+    }
+    
+    body.rtl #editor {
+      direction: rtl !important;
+      text-align: right !important;
+      font-family: 'Simplified Arabic', 'Traditional Arabic', 'Courier New', monospace;
+    }
+    
+    .rtl {
+      direction: rtl !important;
+      text-align: right !important;
+    }
+    
+    .ltr {
+      direction: ltr !important;
+      text-align: left !important;
+    }
+    
+    /* Screenplay elements (Final Draft exact standards) */
+    .element {
+      margin: 0;
+      padding: 0;
+      position: relative;
+      outline: none;
+    }
+    
+    /* Scene heading (INT./EXT.) with proper screenplay format spacing */
+    .scene-heading {
+      text-transform: uppercase;
+      font-weight: bold;
+      margin: 1.5em 0 1em 0;
+    }
+    
+    /* Action paragraphs with correct width */
+    .action {
+      margin: 1em 0;
+      max-width: 65ch; /* Standard screenplay width */
+    }
+    
+    /* Character names positioned correctly */
+    .character {
+      margin: 1em 0 0 30%;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+    
+    /* Dialogue with correct width and position */
+    .dialogue {
+      margin: 0.5em 25% 1em 25%;
+      max-width: 45ch; /* Standard dialogue width */
+    }
+    
+    /* Parentheticals with correct positioning and width */
+    .parenthetical {
+      margin: 0 27% 0 27%;
+      font-style: italic;
+      max-width: 35ch; /* Standard parenthetical width */
+    }
+    
+    /* Transitions always right-aligned */
+    .transition {
+      margin: 2em 10% 0 0;
+      text-transform: uppercase;
+      font-weight: bold;
+      text-align: right;
+    }
+    
+    /* Element highlighting when active (like Final Draft) */
+    .active-line {
+      background-color: var(--highlight);
+    }
+    
+    body.light .active-line {
+      background-color: rgba(218, 165, 32, 0.2);
+    }
+    
+    #feedback-box {
+      display: none;
+      margin: 10px;
+      padding: 15px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+    }
+    
+    #feedback-box textarea {
+      width: 100%;
+      height: 80px;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid var(--gold);
+      background-color: var(--dark-purple);
+      color: var(--white);
+    }
+    
+    body.light #feedback-box textarea {
+      border-color: var(--black);
+      background-color: var(--white);
+      color: var(--black);
+    }
+    
+    #feedback-box button {
+      background-color: var(--gold);
+      color: var(--dark-purple);
+      border: none;
+      padding: 8px 16px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    
+    #notification {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background-color: var(--gold);
+      color: var(--dark-purple);
+      border-radius: 4px;
+      display: none;
+      z-index: 100;
+    }
+    
+    .page-break {
+      border-top: 1px dashed var(--gold);
+      margin: 30px 0;
+      position: relative;
+    }
+    
+    body.light .page-break {
+      border-top: 1px dashed var(--black);
+    }
+    
+    .page-break::after {
+      content: 'PAGE BREAK';
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--dark-purple);
+      padding: 0 10px;
+      font-size: 12px;
+      color: var(--gold);
+    }
+    
+    body.light .page-break::after {
+      background-color: var(--white);
+      color: var(--black);
+    }
+    
+    .modal-container {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal {
+      background-color: var(--dark-purple);
+      border: 1px solid var(--gold);
+      border-radius: 8px;
+      padding: 20px;
+      width: 80%;
+      max-width: 500px;
+    }
+    
+    body.light .modal {
+      background-color: var(--white);
+      border-color: var(--black);
+    }
+    
+    .modal h2 {
+      color: var(--gold);
+      margin-top: 0;
+    }
+    
+    body.light .modal h2 {
+      color: var(--black);
+    }
+    
+    .modal input {
+      width: 100%;
+      padding: 8px;
+      margin: 10px 0;
+      border-radius: 4px;
+      border: 1px solid var(--gold);
+      background-color: rgba(255, 255, 255, 0.1);
+      color: var(--white);
+    }
+    
+    body.light .modal input {
+      border-color: var(--black);
+      background-color: var(--white);
+      color: var(--black);
+    }
+    
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    .modal-buttons button {
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .cancel-btn {
+      background: none;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+    }
+    
+    .confirm-btn {
+      background-color: var(--gold);
+      color: var(--dark-purple);
+      border: none;
+    }
+    
+    body.light .cancel-btn {
+      border-color: var(--black);
+      color: var(--black);
+    }
+    
+    body.light .confirm-btn {
+      background-color: var(--black);
+      color: var(--white);
+    }
+    
+    .keyboard-shortcut {
+      font-size: 10px;
+      color: rgba(255, 215, 0, 0.7);
+      margin-left: 5px;
+    }
+    
+    body.light .keyboard-shortcut {
+      color: rgba(0, 0, 0, 0.5);
+    }
+  </style>
 </head>
 <body>
-    <div class="min-h-screen">
-        <div id="header">
-            <div id="app-name">Fade Out</div>
-            <div id="tagline">Write, Rewrite, Fade Out</div>
-        </div>
+  <div id="header">
+    <div id="app-name">Fade Out</div>
+    <div id="tagline">Write, Rewrite, Fade Out</div>
+  </div>
 
-        <div class="main-content">
-            <div class="editor-container">
-                <div class="toolbar">
-                    <button type="button" class="element-btn active" data-element="scene-heading">Scene Heading</button>
-                    <button type="button" class="element-btn" data-element="action">Action</button>
-                    <button type="button" class="element-btn" data-element="character">Character</button>
-                    <button type="button" class="element-btn" data-element="dialogue">Dialogue</button>
-                    <button type="button" class="element-btn" data-element="parenthetical">Parenthetical</button>
-                    <button type="button" class="element-btn" data-element="transition">Transition</button>
-                    <button type="button" class="direction" onclick="toggleDirection()">RTL/LTR</button>
-                    <button type="button" onclick="saveScript()">Save</button>
-                    <button type="button" onclick="loadScript()">Load</button>
-                    <button type="button" onclick="shareScript()">Share</button>
-                    <button type="button" class="export" onclick="exportScript()">Export</button>
-                </div>
-
-                <div id="editor" contenteditable="true">
-                    <div class="scene-heading">FADE IN:</div>
-                    <div class="action">Welcome to Fade Out - Your professional screenplay editor with bilingual support.</div>
-                    <div class="action">Click here to start writing your screenplay. Use the toolbar above to change element types.</div>
-                </div>
-            </div>
-        </div>
+  <div id="toolbar-container">
+    <div class="toolbar-row">
+      <button id="scene-heading-btn" class="element-active" title="Scene Heading (Ctrl+S)">
+        Scene Heading <span class="keyboard-shortcut">Ctrl+S</span>
+      </button>
+      <button id="action-btn" title="Action (Ctrl+A)">
+        Action <span class="keyboard-shortcut">Ctrl+A</span>
+      </button>
+      <button id="character-btn" title="Character (Ctrl+C)">
+        Character <span class="keyboard-shortcut">Ctrl+C</span>
+      </button>
+      <button id="parenthetical-btn" title="Parenthetical (Ctrl+P)">
+        Parenthetical <span class="keyboard-shortcut">Ctrl+P</span>
+      </button>
+      <button id="dialogue-btn" title="Dialogue (Ctrl+D)">
+        Dialogue <span class="keyboard-shortcut">Ctrl+D</span>
+      </button>
+      <button id="transition-btn" title="Transition (Ctrl+T)">
+        Transition <span class="keyboard-shortcut">Ctrl+T</span>
+      </button>
     </div>
-
-    <!-- Modals -->
-    <div id="saveModal" class="modal-overlay hidden">
-        <div class="modal">
-            <h2>Save Script</h2>
-            <input type="text" id="saveTitle" placeholder="Script title">
-            <div class="modal-buttons">
-                <button class="btn btn-secondary" onclick="closeSaveModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="confirmSave()">Save</button>
-            </div>
-        </div>
+    <div class="toolbar-row">
+      <button id="save-btn" title="Save Script (Ctrl+Shift+S)">
+        Save <span class="keyboard-shortcut">Ctrl+Shift+S</span>
+      </button>
+      <button id="load-btn" title="Load Script (Ctrl+Shift+L)">
+        Load <span class="keyboard-shortcut">Ctrl+Shift+L</span>
+      </button>
+      <button id="export-btn" title="Export as PDF (Ctrl+E)">
+        Export <span class="keyboard-shortcut">Ctrl+E</span>
+      </button>
+      <button id="theme-btn" title="Toggle Theme (Ctrl+Shift+T)">
+        Toggle Theme <span class="keyboard-shortcut">Ctrl+Shift+T</span>
+      </button>
+      <button id="direction-btn" title="Toggle Direction (Ctrl+Shift+D)">
+        Toggle Direction <span class="keyboard-shortcut">Ctrl+Shift+D</span>
+      </button>
+      <button id="share-btn" title="Share Script (Ctrl+Shift+H)">
+        Share <span class="keyboard-shortcut">Ctrl+Shift+H</span>
+      </button>
+      <button id="feedback-btn" title="Give Feedback">
+        Feedback
+      </button>
     </div>
+  </div>
 
-    <div id="loadModal" class="modal-overlay hidden">
-        <div class="modal">
-            <h2>Load Script</h2>
-            <div id="scriptList"></div>
-            <div class="modal-buttons">
-                <button class="btn btn-secondary" onclick="closeLoadModal()">Cancel</button>
-            </div>
-        </div>
+  <div id="character-suggestions" class="character-suggestion"></div>
+
+  <div id="editor" contenteditable="true" spellcheck="true">
+    <!-- Editor will be populated with script elements -->
+  </div>
+
+  <div id="feedback-box">
+    <textarea id="feedback-text" placeholder="Enter your feedback here..."></textarea>
+    <button id="send-feedback-btn">Send Feedback</button>
+  </div>
+
+  <div id="notification">Notification Message Here</div>
+
+  <!-- Save Modal -->
+  <div class="modal-container" id="save-modal-container">
+    <div class="modal" id="save-modal">
+      <h2>Save Script</h2>
+      <input type="text" id="script-title" placeholder="Script Title">
+      <div class="modal-buttons">
+        <button class="cancel-btn" id="save-cancel">Cancel</button>
+        <button class="confirm-btn" id="save-confirm">Save</button>
+      </div>
     </div>
+  </div>
 
-    <div id="shareModal" class="modal-overlay hidden">
-        <div class="modal">
-            <h2>Share Script</h2>
-            <p>Your script has been saved. Share this link:</p>
-            <input type="text" id="shareLink" readonly>
-            <textarea placeholder="Add feedback (optional)" id="feedbackText"></textarea>
-            <div class="modal-buttons">
-                <button class="btn btn-secondary" onclick="closeShareModal()">Close</button>
-                <button class="btn btn-primary" onclick="copyShareLink()">Copy Link</button>
-            </div>
-        </div>
+  <!-- Load Modal -->
+  <div class="modal-container" id="load-modal-container">
+    <div class="modal" id="load-modal">
+      <h2>Load Script</h2>
+      <div id="saved-scripts-list" style="max-height: 200px; overflow-y: auto; margin: 10px 0;">
+        <!-- Saved scripts will be listed here -->
+      </div>
+      <div class="modal-buttons">
+        <button class="cancel-btn" id="load-cancel">Cancel</button>
+        <button class="confirm-btn" id="load-confirm">Load Selected</button>
+      </div>
     </div>
+  </div>
 
-    <div id="notification" class="notification"></div>
+  <!-- Share Modal -->
+  <div class="modal-container" id="share-modal-container">
+    <div class="modal" id="share-modal">
+      <h2>Share Script</h2>
+      <input type="text" id="share-link" readonly placeholder="Share link will appear here">
+      <div class="modal-buttons">
+        <button class="cancel-btn" id="share-cancel">Close</button>
+        <button class="confirm-btn" id="copy-link">Copy Link</button>
+      </div>
+    </div>
+  </div>
 
-    <script>
-        // Global state
-        let currentElement = 'scene-heading';
-        let isRtl = false;
-        let scriptCharacters = new Set();
-        let scripts = JSON.parse(localStorage.getItem('fadeOutScripts') || '{}');
-
-        // Editor reference
-        const editor = document.getElementById('editor');
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            setupEventListeners();
-            updateToolbarState();
+  <script>
+    // Global variables for script state
+    let currentElement = 'scene-heading';
+    let scriptCharacters = new Set(['ALEX', 'BARISTA']);
+    let isRtlMode = false;
+    
+    // DOM elements
+    const editor = document.getElementById('editor');
+    const feedbackBox = document.getElementById('feedback-box');
+    const notification = document.getElementById('notification');
+    const saveModalContainer = document.getElementById('save-modal-container');
+    const loadModalContainer = document.getElementById('load-modal-container');
+    const shareModalContainer = document.getElementById('share-modal-container');
+    const scriptTitle = document.getElementById('script-title');
+    const savedScriptsList = document.getElementById('saved-scripts-list');
+    const shareLink = document.getElementById('share-link');
+    
+    // Initialize editor
+    window.addEventListener('DOMContentLoaded', () => {
+      // Add initial scene heading if editor is empty
+      if (editor.children.length === 0) {
+        insertNewElement('scene-heading');
+      }
+      
+      // Set up event listeners
+      setupEventListeners();
+      
+      // Extract characters from any existing content
+      extractCharactersFromContent();
+    });
+    
+    function setupEventListeners() {
+      // Element type buttons
+      document.getElementById('scene-heading-btn').addEventListener('click', () => setCurrentElement('scene-heading'));
+      document.getElementById('action-btn').addEventListener('click', () => setCurrentElement('action'));
+      document.getElementById('character-btn').addEventListener('click', () => setCurrentElement('character'));
+      document.getElementById('parenthetical-btn').addEventListener('click', () => setCurrentElement('parenthetical'));
+      document.getElementById('dialogue-btn').addEventListener('click', () => setCurrentElement('dialogue'));
+      document.getElementById('transition-btn').addEventListener('click', () => setCurrentElement('transition'));
+      
+      // Action buttons
+      document.getElementById('save-btn').addEventListener('click', openSaveModal);
+      document.getElementById('load-btn').addEventListener('click', openLoadModal);
+      document.getElementById('export-btn').addEventListener('click', exportScript);
+      document.getElementById('theme-btn').addEventListener('click', toggleTheme);
+      document.getElementById('direction-btn').addEventListener('click', toggleDirection);
+      document.getElementById('share-btn').addEventListener('click', openShareModal);
+      document.getElementById('feedback-btn').addEventListener('click', toggleFeedback);
+      
+      // Modal buttons
+      document.getElementById('save-cancel').addEventListener('click', () => saveModalContainer.style.display = 'none');
+      document.getElementById('save-confirm').addEventListener('click', saveScript);
+      document.getElementById('load-cancel').addEventListener('click', () => loadModalContainer.style.display = 'none');
+      document.getElementById('load-confirm').addEventListener('click', loadSelectedScript);
+      document.getElementById('share-cancel').addEventListener('click', () => shareModalContainer.style.display = 'none');
+      document.getElementById('copy-link').addEventListener('click', copyShareLink);
+      document.getElementById('send-feedback-btn').addEventListener('click', sendFeedback);
+      
+      // Editor events
+      editor.addEventListener('click', handleEditorClick);
+      editor.addEventListener('input', handleEditorInput);
+      editor.addEventListener('keydown', handleEditorKeyDown);
+      
+      // Global keyboard shortcuts
+      document.addEventListener('keydown', handleGlobalKeyDown);
+    }
+    
+    // Editor interactions
+    // Simplified click handler (from the minimal version)
+    function handleEditorClick(e) {
+      // Get clicked element or closest parent element
+      const target = e.target.closest('.element');
+      
+      // If clicked inside the editor but not on an element
+      if (!target) {
+        // Create a new element of current type if clicking in editor
+        if (e.target === editor) {
+          insertNewElement(currentElement);
+        }
+        return;
+      }
+      
+      // Update current element type and active line
+      setCurrentElement(getElementType(target));  
+      updateActiveLine(target);
+    }
+    
+    // Simplified input handler (from the minimal version)
+    function handleEditorInput(e) {
+      const activeElement = document.querySelector('.active-line');
+      if (!activeElement) return;
+      
+      // Auto-capitalize elements that need it
+      if (['scene-heading', 'character', 'transition'].includes(getElementType(activeElement))) {
+        // Get cursor position first
+        const cursorPosition = getCaretPosition(activeElement);
+        
+        // Convert to uppercase
+        activeElement.textContent = activeElement.textContent?.toUpperCase() || '';
+        
+        // Restore cursor position
+        setCaretPosition(activeElement, cursorPosition);
+      }
+      
+      // Auto-format parentheticals
+      if (activeElement.classList.contains('parenthetical')) {
+        let text = activeElement.textContent || '';
+        
+        // Handle parenthetical formatting
+        if (!text.startsWith('(')) {
+          activeElement.textContent = '(' + text;
+          setCaretPosition(activeElement, text.length + 1);
+        }
+        
+        if (text.length > 0 && !text.endsWith(')')) {
+          activeElement.textContent = text + ')';
+          setCaretPosition(activeElement, text.length);
+        }
+      }
+      
+      if (activeElement.classList.contains('character')) {
+        const character = activeElement.textContent?.trim();
+        if (character) {
+          scriptCharacters.add(character);
+          
+          const matches = Array.from(scriptCharacters).filter(char => 
+            char.startsWith(character) && char !== character
+          );
+          
+          if (matches.length > 0 && character.length >= 2) {
+            showCharacterSuggestions(matches, activeElement);
+          } else {
+            hideCharacterSuggestions();
+          }
+        }
+      }
+    }
+    
+    // Show character suggestions
+    function showCharacterSuggestions(matches, activeElement) {
+      const suggestions = document.getElementById('character-suggestions');
+      suggestions.innerHTML = '';
+      
+      matches.forEach(match => {
+        const item = document.createElement('div');
+        item.className = 'character-suggestion-item';
+        item.textContent = match;
+        item.addEventListener('click', () => {
+          activeElement.textContent = match;
+          hideCharacterSuggestions();
+          activeElement.focus();
+          
+          // After selecting, move to dialogue (Final Draft behavior)
+          setCurrentElement('dialogue');
+          insertNewElement('dialogue');
         });
+        suggestions.appendChild(item);
+      });
+      
+      const rect = activeElement.getBoundingClientRect();
+      suggestions.style.display = 'block';
+      suggestions.style.left = `${rect.left}px`;
+      suggestions.style.top = `${rect.bottom}px`;
+      
+      // Make first item active by default
+      if (suggestions.children.length > 0) {
+        suggestions.children[0].classList.add('active');
+      }
+      
+      // Close suggestions when clicking outside
+      document.addEventListener('click', function closeSuggestions(e) {
+        if (!suggestions.contains(e.target) && e.target !== activeElement) {
+          hideCharacterSuggestions();
+          document.removeEventListener('click', closeSuggestions);
+        }
+      });
+    }
 
-        function setupEventListeners() {
-            // Toolbar buttons
-            document.querySelectorAll('.element-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    setCurrentElement(this.dataset.element);
-                });
+    // Hide character suggestions
+    function hideCharacterSuggestions() {
+      document.getElementById('character-suggestions').style.display = 'none';
+    }
+    
+    // Simplified key handler based on the minimal version
+    function handleEditorKeyDown(e) {
+      const activeElement = document.querySelector('.active-line');
+      if (!activeElement) return;
+      
+      // Tab key - cycle through element types
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        
+        const currentType = getElementType(activeElement);
+        const text = activeElement.textContent.trim();
+        
+        // Final Draft's exact element cycle for Tab key (clean implementation)
+        const cycle = {
+          'scene-heading': 'action',
+          'action': 'character',
+          'character': 'parenthetical',
+          'parenthetical': 'dialogue',
+          'dialogue': 'character',
+          'transition': 'scene-heading'
+        };
+        
+        // Apply the new element type
+        changeElementType(activeElement, cycle[currentType] || 'action');
+      }
+      
+      // Enter key for new elements
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        
+        const currentType = getElementType(activeElement);
+        const text = activeElement.textContent.trim();
+        let nextType = currentType; // Default to same type
+        
+        // Final Draft's exact element flow for Enter key
+        switch(currentType) {
+          case 'scene-heading': nextType = 'action'; break;
+          case 'action': nextType = 'action'; break; // Action always stays action
+          case 'character': nextType = text ? 'dialogue' : 'character'; break;
+          case 'dialogue': nextType = 'character'; break;
+          case 'parenthetical': nextType = 'dialogue'; break;
+          case 'transition': nextType = 'scene-heading'; break;
+        }
+        
+        setCurrentElement(nextType);
+        insertNewElement(nextType);
+      }
+      
+      // Add Final Draft-like auto-completion for scene headings (INT./EXT.)
+      if (e.key === '.' && !isRtlMode) {
+        const currentType = getElementType(activeElement);
+        
+        if (currentType === 'scene-heading') {
+          const text = activeElement.textContent.trim().toUpperCase() || '';
+          
+          // Auto-complete common scene heading prefixes
+          if (text === 'INT' || text === 'EXT' || text === 'I/E') {
+            e.preventDefault();
+            activeElement.textContent = text + '. ';
+            placeCaretAtEnd(activeElement);
+          }
+        }
+      }
+      
+      // Auto-complete RTL scene headings with reverse dot placement
+      if (e.key === '.' && isRtlMode) {
+        const currentType = getElementType(activeElement);
+        
+        if (currentType === 'scene-heading') {
+          const text = activeElement.textContent.trim().toUpperCase() || '';
+          
+          // In RTL mode, dot comes at the start
+          if (text === 'INT' || text === 'EXT' || text === 'I/E') {
+            e.preventDefault();
+            activeElement.textContent = '.' + text + ' ';
+            placeCaretAtEnd(activeElement);
+          }
+        }
+      }
+      
+      // Handle character auto-complete with arrow keys (Final Draft behavior)
+      if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && 
+          activeElement.classList.contains('character') &&
+          document.getElementById('character-suggestions').style.display === 'block') {
+        e.preventDefault();
+        const suggestions = document.querySelectorAll('.character-suggestion-item');
+        if (suggestions.length > 0) {
+          // Navigate suggestions with arrow keys
+          const current = document.querySelector('.character-suggestion-item.active');
+          let index = -1;
+          
+          if (current) {
+            current.classList.remove('active');
+            index = Array.from(suggestions).indexOf(current);
+          }
+          
+          if (e.key === 'ArrowDown') {
+            index = (index + 1) % suggestions.length;
+          } else {
+            index = index <= 0 ? suggestions.length - 1 : index - 1;
+          }
+          
+          suggestions[index].classList.add('active');
+        }
+      }
+      
+      // Select suggestion with Enter key (Final Draft behavior)
+      if (e.key === 'Enter' && 
+          activeElement.classList.contains('character') &&
+          document.getElementById('character-suggestions').style.display === 'block') {
+        const activeSuggestion = document.querySelector('.character-suggestion-item.active');
+        if (activeSuggestion) {
+          e.preventDefault();
+          activeElement.textContent = activeSuggestion.textContent;
+          hideCharacterSuggestions();
+          
+          // After selecting, move to dialogue (Final Draft behavior)
+          setCurrentElement('dialogue');
+          insertNewElement('dialogue');
+        }
+      }
+    }
+    
+    function handleGlobalKeyDown(e) {
+      // Ctrl/Cmd + Shift shortcuts
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey) {
+        switch (e.key.toLowerCase()) {
+          case 's': // Save
+            e.preventDefault();
+            openSaveModal();
+            break;
+          case 'l': // Load
+            e.preventDefault();
+            openLoadModal();
+            break;
+          case 't': // Toggle Theme
+            e.preventDefault();
+            toggleTheme();
+            break;
+          case 'd': // Toggle Direction
+            e.preventDefault();
+            toggleDirection();
+            break;
+          case 'h': // Share
+            e.preventDefault();
+            openShareModal();
+            break;
+        }
+      }
+      
+      // Ctrl/Cmd shortcuts (without shift)
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey) {
+        switch (e.key.toLowerCase()) {
+          case 's': // Scene Heading
+            e.preventDefault();
+            setCurrentElement('scene-heading');
+            break;
+          case 'a': // Action
+            e.preventDefault();
+            setCurrentElement('action');
+            break;
+          case 'c': // Character
+            e.preventDefault();
+            setCurrentElement('character');
+            break;
+          case 'p': // Parenthetical
+            e.preventDefault();
+            setCurrentElement('parenthetical');
+            break;
+          case 'd': // Dialogue
+            e.preventDefault();
+            setCurrentElement('dialogue');
+            break;
+          case 't': // Transition
+            e.preventDefault();
+            setCurrentElement('transition');
+            break;
+          case 'e': // Export
+            e.preventDefault();
+            exportScript();
+            break;
+        }
+      }
+    }
+    
+    // Editor element management (Final Draft compatible)
+    function insertNewElement(elementType) {
+      const newElement = document.createElement('div');
+      newElement.className = `element ${elementType}`;
+      newElement.id = `element-${Date.now()}`;
+      newElement.contentEditable = true;
+      
+      // Special handling for element types
+      if (elementType === 'parenthetical') {
+        newElement.textContent = '()';
+      }
+      
+      if (elementType === 'scene-heading') {
+        const existingSceneHeadings = document.querySelectorAll('.scene-heading');
+        if (existingSceneHeadings.length === 0) {
+          // First scene heading in the document
+          if (isRtlMode) {
+            newElement.textContent = '.INT ';
+          } else {
+            newElement.textContent = 'INT. ';
+          }
+        }
+      }
+      
+      if (elementType === 'character') {
+        const previousElement = document.querySelector('.active-line');
+        
+        // Final Draft CONT'D logic
+        if (previousElement && previousElement.classList.contains('dialogue')) {
+          // Find the last character element for this dialogue
+          const allElements = Array.from(document.querySelectorAll('.element'));
+          const prevIndex = allElements.indexOf(previousElement);
+          let characterName = '';
+          let foundNonDialogue = false;
+          
+          // Look backwards to find the character for this dialogue
+          for (let i = prevIndex - 1; i >= 0; i--) {
+            const el = allElements[i];
+            
+            // If we find a different character or scene heading, stop looking
+            if (el.classList.contains('scene-heading')) {
+              break;
+            }
+            
+            // If we find an action between dialogues, don't add CONT'D
+            if (el.classList.contains('action')) {
+              foundNonDialogue = true;
+              break;
+            }
+            
+            if (el.classList.contains('character')) {
+              characterName = el.textContent.trim().replace(/ \(CONT'D\)$/, '');
+              break;
+            }
+          }
+          
+          if (characterName && !foundNonDialogue) {
+            newElement.textContent = characterName + ' (CONT\'D)';
+          }
+        }
+      }
+      
+      // Add after active element or at the end if no active element
+      const activeElement = document.querySelector('.active-line');
+      
+      if (activeElement) {
+        activeElement.classList.remove('active-line');
+        activeElement.after(newElement);
+      } else {
+        document.getElementById('editor').appendChild(newElement);
+      }
+      
+      // Focus and position cursor
+      newElement.classList.add('active-line');
+      newElement.focus();
+      
+      if (elementType === 'parenthetical') {
+        setCaretPosition(newElement, 1);
+      } else if ((elementType === 'scene-heading' || elementType === 'character') && 
+                 newElement.textContent) {
+        placeCaretAtEnd(newElement);
+      }
+    }
+    
+    // Simplified element type change handler from minimal example
+    function changeElementType(element, newType) {
+      // Update element class
+      element.className = `element ${newType} active-line`;
+      
+      // Special handling based on element type
+      if (newType === 'scene-heading' && element.textContent.trim() === '') {
+        // Add default INT or EXT based on RTL mode
+        if (isRtlMode) {
+          element.textContent = '.INT ';
+        } else {
+          element.textContent = 'INT. ';
+        }
+        placeCaretAtEnd(element);
+      }
+      
+      if (newType === 'parenthetical') {
+        element.textContent = '()';
+        setCaretPosition(element, 1);
+      }
+      
+      // Auto-capitalize for appropriate element types
+      if (['scene-heading', 'character', 'transition'].includes(newType)) {
+        element.textContent = element.textContent.toUpperCase();
+      }
+      
+      element.focus();
+    }
+    
+    function updateActiveLine(element) {
+      document.querySelectorAll('.element').forEach(el => {
+        el.classList.remove('active-line');
+      });
+      element.classList.add('active-line');
+    }
+    
+    // Set caret position in an element with precise positioning for complex nodes
+    function setCaretPosition(element, offset) {
+      const range = document.createRange();
+      const selection = window.getSelection();
+      
+      if (element.childNodes.length > 0) {
+        let node = element.childNodes[0];
+        let count = 0;
+        
+        while (count < offset && node.length > 0) {
+          const move = Math.min(offset - count, node.length);
+          count += move;
+          if (count < offset && node.nextSibling) {
+            node = node.nextSibling;
+          }
+        }
+        
+        range.setStart(node, Math.min(offset, node.length));
+      } else {
+        range.setStart(element, 0);
+      }
+      
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+    
+    // Get caret position within an element
+    function getCaretPosition(element) {
+      const selection = window.getSelection();
+      if (!selection.rangeCount) return 0;
+      
+      const range = selection.getRangeAt(0);
+      const preRange = range.cloneRange();
+      preRange.selectNodeContents(element);
+      preRange.setEnd(range.endContainer, range.endOffset);
+      return preRange.toString().length;
+    }
+    
+    // Place caret at the end of an element
+    function placeCaretAtEnd(element) {
+      const range = document.createRange();
+      const selection = window.getSelection();
+      range.selectNodeContents(element);
+      range.collapse(false);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+    
+    // Set current element type
+    function setCurrentElement(type) {
+      currentElement = type;
+      
+      // Update button highlighting
+      document.querySelectorAll('.toolbar-row button').forEach(btn => {
+        btn.classList.remove('element-active');
+      });
+      
+      const btn = document.getElementById(`${type}-btn`);
+      if (btn) {
+        btn.classList.add('element-active');
+      }
+    }
+    
+    // Theme and direction toggling
+    function toggleTheme() {
+      document.body.classList.toggle('light');
+      showNotification('Theme toggled');
+    }
+    
+    // Simplified language/direction toggle from minimal example
+    function toggleDirection() {
+      isRtlMode = !isRtlMode;
+      
+      // Toggle RTL class on body
+      document.body.classList.toggle('rtl');
+      
+      // Update button text
+      const btn = document.getElementById('direction-btn');
+      if (btn) {
+        btn.textContent = isRtlMode ? 'العربية' : 'English';
+      }
+      
+      // Update scene headings based on direction
+      document.querySelectorAll('.scene-heading').forEach(el => {
+        const text = el.textContent.trim();
+        
+        if (isRtlMode) {
+          // Switch to RTL format
+          if (text.startsWith('INT.')) {
+            el.textContent = text.replace('INT.', '.INT');
+          } else if (text.startsWith('EXT.')) {
+            el.textContent = text.replace('EXT.', '.EXT');
+          }
+        } else {
+          // Switch to LTR format
+          if (text.startsWith('.INT')) {
+            el.textContent = text.replace('.INT', 'INT.');
+          } else if (text.startsWith('.EXT')) {
+            el.textContent = text.replace('.EXT', 'EXT.');
+          }
+        }
+        
+        // Maintain focus and cursor position
+        if (el.classList.contains('active-line')) {
+          placeCaretAtEnd(el);
+        }
+      });
+      
+      showNotification(`Direction toggled to ${isRtlMode ? 'RTL' : 'LTR'}`);
+    }
+    
+    function toggleFeedback() {
+      if (feedbackBox.style.display === 'block') {
+        feedbackBox.style.display = 'none';
+      } else {
+        feedbackBox.style.display = 'block';
+      }
+    }
+    
+    // Extract characters from content
+    function extractCharactersFromContent() {
+      document.querySelectorAll('.character').forEach(el => {
+        const character = el.textContent?.trim();
+        if (character) {
+          scriptCharacters.add(character);
+        }
+      });
+    }
+    
+    // Notification
+    function showNotification(message) {
+      notification.textContent = message;
+      notification.style.display = 'block';
+      
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 2000);
+    }
+    
+    // Save scripts
+    function openSaveModal() {
+      scriptTitle.value = '';
+      saveModalContainer.style.display = 'flex';
+      scriptTitle.focus();
+    }
+    
+    function saveScript() {
+      const title = scriptTitle.value.trim();
+      
+      if (!title) {
+        showNotification('Please enter a title');
+        return;
+      }
+      
+      // Get script content
+      const content = editor.innerHTML;
+      
+      // Get all character names
+      const characters = Array.from(scriptCharacters);
+      
+      // Create timestamp
+      const timestamp = Date.now();
+      
+      // Store in localStorage
+      const savedScripts = JSON.parse(localStorage.getItem('savedScripts') || '{}');
+      savedScripts[title] = { content, characters, timestamp };
+      localStorage.setItem('savedScripts', JSON.stringify(savedScripts));
+      
+      // Close modal
+      saveModalContainer.style.display = 'none';
+      
+      showNotification(`Script "${title}" saved`);
+    }
+    
+    // Load scripts
+    function openLoadModal() {
+      // Clear previous list
+      savedScriptsList.innerHTML = '';
+      
+      // Get saved scripts
+      const savedScripts = JSON.parse(localStorage.getItem('savedScripts') || '{}');
+      
+      if (Object.keys(savedScripts).length === 0) {
+        savedScriptsList.innerHTML = '<div style="padding: 10px; color: gray;">No saved scripts</div>';
+      } else {
+        // Sort by timestamp (newest first)
+        const sortedScripts = Object.entries(savedScripts).sort((a, b) => b[1].timestamp - a[1].timestamp);
+        
+        sortedScripts.forEach(([title, data]) => {
+          const item = document.createElement('div');
+          item.style.padding = '10px';
+          item.style.borderBottom = '1px solid #333';
+          item.style.cursor = 'pointer';
+          
+          // Format date
+          const date = new Date(data.timestamp);
+          const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+          
+          item.innerHTML = `<strong>${title}</strong><br><small>${formattedDate}</small>`;
+          
+          item.addEventListener('click', () => {
+            // Remove selected class from all items
+            document.querySelectorAll('#saved-scripts-list div').forEach(div => {
+              div.classList.remove('selected');
+              div.style.backgroundColor = '';
             });
-
-            // Editor events
-            editor.addEventListener('keydown', handleKeyDown);
-            editor.addEventListener('click', handleClick);
-            editor.addEventListener('input', extractCharacters);
-
-            // Modal close on overlay click
-            document.querySelectorAll('.modal-overlay').forEach(modal => {
-                modal.addEventListener('click', function(e) {
-                    if (e.target === this) {
-                        this.classList.add('hidden');
-                    }
-                });
-            });
-        }
-
-        function setCurrentElement(elementType) {
-            currentElement = elementType;
-            updateToolbarState();
-        }
-
-        function updateToolbarState() {
-            document.querySelectorAll('.element-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.element === currentElement);
-            });
-        }
-
-        function handleKeyDown(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                addNewElement();
-            } else if (e.key === 'Tab') {
-                e.preventDefault();
-                cycleElementType();
-            }
-        }
-
-        function handleClick(e) {
-            const element = e.target.closest('[class*="scene-heading"], [class*="action"], [class*="character"], [class*="dialogue"], [class*="parenthetical"], [class*="transition"]');
-            if (element) {
-                const className = element.className;
-                if (className.includes('scene-heading')) setCurrentElement('scene-heading');
-                else if (className.includes('action')) setCurrentElement('action');
-                else if (className.includes('character')) setCurrentElement('character');
-                else if (className.includes('dialogue')) setCurrentElement('dialogue');
-                else if (className.includes('parenthetical')) setCurrentElement('parenthetical');
-                else if (className.includes('transition')) setCurrentElement('transition');
-            }
-        }
-
-        function addNewElement(text = '') {
-            const div = document.createElement('div');
-            div.className = currentElement;
-            div.textContent = text || '\u00A0'; // Non-breaking space
             
-            const selection = window.getSelection();
-            const range = selection.getRangeAt(0);
-            range.deleteContents();
-            range.insertNode(div);
+            // Add selected class to clicked item
+            item.classList.add('selected');
+            item.style.backgroundColor = 'rgba(255, 215, 0, 0.1)';
             
-            // Position cursor at end of new element
-            const newRange = document.createRange();
-            newRange.selectNodeContents(div);
-            newRange.collapse(false);
-            selection.removeAllRanges();
-            selection.addRange(newRange);
-            
-            scrollToElement(div);
-        }
-
-        function cycleElementType() {
-            const types = ['scene-heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'];
-            const currentIndex = types.indexOf(currentElement);
-            const nextIndex = (currentIndex + 1) % types.length;
-            setCurrentElement(types[nextIndex]);
-        }
-
-        function scrollToElement(element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-
-        function extractCharacters() {
-            document.querySelectorAll('.character').forEach(el => {
-                const text = el.textContent.trim();
-                if (text && text !== '\u00A0') {
-                    scriptCharacters.add(text);
-                }
-            });
-        }
-
-        function toggleDirection() {
-            isRtl = !isRtl;
-            editor.classList.toggle('rtl', isRtl);
-            showNotification(`Direction changed to ${isRtl ? 'RTL' : 'LTR'}`);
-        }
-
-        function saveScript() {
-            document.getElementById('saveModal').classList.remove('hidden');
-        }
-
-        function closeSaveModal() {
-            document.getElementById('saveModal').classList.add('hidden');
-            document.getElementById('saveTitle').value = '';
-        }
-
-        function confirmSave() {
-            const title = document.getElementById('saveTitle').value.trim();
-            if (!title) {
-                showNotification('Please enter a script title', 'error');
-                return;
-            }
-
-            const scriptData = {
-                content: editor.innerHTML,
-                characters: Array.from(scriptCharacters),
-                timestamp: Date.now(),
-                direction: isRtl ? 'rtl' : 'ltr'
-            };
-
-            scripts[title] = scriptData;
-            localStorage.setItem('fadeOutScripts', JSON.stringify(scripts));
-            
-            closeSaveModal();
-            showNotification(`Script "${title}" saved successfully!`);
-        }
-
-        function loadScript() {
-            const scriptList = document.getElementById('scriptList');
-            scriptList.innerHTML = '';
-
-            if (Object.keys(scripts).length === 0) {
-                scriptList.innerHTML = '<p>No saved scripts found.</p>';
-            } else {
-                Object.entries(scripts).forEach(([title, data]) => {
-                    const div = document.createElement('div');
-                    div.style.cssText = 'padding: 0.5rem; border: 1px solid #ddd; margin-bottom: 0.5rem; border-radius: 4px; cursor: pointer;';
-                    div.innerHTML = `
-                        <strong>${title}</strong><br>
-                        <small>Saved: ${new Date(data.timestamp).toLocaleString()}</small>
-                    `;
-                    div.onclick = () => {
-                        editor.innerHTML = data.content;
-                        scriptCharacters = new Set(data.characters || []);
-                        isRtl = data.direction === 'rtl';
-                        editor.classList.toggle('rtl', isRtl);
-                        closeLoadModal();
-                        showNotification(`Script "${title}" loaded successfully!`);
-                    };
-                    scriptList.appendChild(div);
-                });
-            }
-
-            document.getElementById('loadModal').classList.remove('hidden');
-        }
-
-        function closeLoadModal() {
-            document.getElementById('loadModal').classList.add('hidden');
-        }
-
-        function shareScript() {
-            // Generate a simple share ID
-            const shareId = 'script_' + Date.now();
-            const shareLink = `${window.location.origin}#${shareId}`;
-            
-            document.getElementById('shareLink').value = shareLink;
-            document.getElementById('shareModal').classList.remove('hidden');
-            
-            // Save to shared scripts (in real app, this would go to server)
-            const sharedScripts = JSON.parse(localStorage.getItem('sharedScripts') || '{}');
-            sharedScripts[shareId] = {
-                content: editor.innerHTML,
-                characters: Array.from(scriptCharacters),
-                direction: isRtl ? 'rtl' : 'ltr',
-                timestamp: Date.now()
-            };
-            localStorage.setItem('sharedScripts', JSON.stringify(sharedScripts));
-        }
-
-        function closeShareModal() {
-            document.getElementById('shareModal').classList.add('hidden');
-        }
-
-        function copyShareLink() {
-            const shareLink = document.getElementById('shareLink');
-            shareLink.select();
-            shareLink.setSelectionRange(0, 99999);
-            
-            try {
-                document.execCommand('copy');
-                showNotification('Share link copied to clipboard!');
-            } catch (err) {
-                showNotification('Failed to copy link', 'error');
-            }
-        }
-
-        function exportScript() {
-            const content = editor.innerHTML;
-            const blob = new Blob([content], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'screenplay.html';
-            a.click();
-            URL.revokeObjectURL(url);
-            showNotification('Script exported successfully!');
-        }
-
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.style.background = type === 'error' ? '#dc3545' : '#28a745';
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-
-        // Load shared script if hash is present
-        window.addEventListener('load', function() {
-            const hash = window.location.hash.slice(1);
-            if (hash.startsWith('script_')) {
-                const sharedScripts = JSON.parse(localStorage.getItem('sharedScripts') || '{}');
-                const sharedScript = sharedScripts[hash];
-                if (sharedScript) {
-                    editor.innerHTML = sharedScript.content;
-                    scriptCharacters = new Set(sharedScript.characters || []);
-                    isRtl = sharedScript.direction === 'rtl';
-                    editor.classList.toggle('rtl', isRtl);
-                    showNotification('Shared script loaded!');
-                }
-            }
+            // Store selected script title
+            savedScriptsList.dataset.selected = title;
+          });
+          
+          savedScriptsList.appendChild(item);
         });
-    </script>
+      }
+      
+      loadModalContainer.style.display = 'flex';
+    }
+    
+    function loadSelectedScript() {
+      const selectedTitle = savedScriptsList.dataset.selected;
+      
+      if (!selectedTitle) {
+        showNotification('Please select a script to load');
+        return;
+      }
+      
+      // Get saved scripts
+      const savedScripts = JSON.parse(localStorage.getItem('savedScripts') || '{}');
+      
+      if (!savedScripts[selectedTitle]) {
+        showNotification('Selected script not found');
+        return;
+      }
+      
+      // Load script content
+      editor.innerHTML = savedScripts[selectedTitle].content;
+      
+      // Load characters
+      scriptCharacters = new Set(savedScripts[selectedTitle].characters);
+      
+      // Close modal
+      loadModalContainer.style.display = 'none';
+      
+      // Update active line
+      if (editor.firstChild) {
+        updateActiveLine(editor.firstChild);
+      }
+      
+      showNotification(`Script "${selectedTitle}" loaded`);
+    }
+    
+    // Share functionality
+    function openShareModal() {
+      // Generate share URL
+      const scriptContent = editor.innerHTML;
+      const charactersArray = Array.from(scriptCharacters);
+      
+      const scriptData = {
+        content: scriptContent,
+        characters: charactersArray,
+        timestamp: Date.now()
+      };
+      
+      // Use fetch to get share URL
+      fetch('/api/scripts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(scriptData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Create share URL
+        const shareUrl = `${window.location.origin}/shared/${data.shareId}`;
+        
+        // Display in input
+        shareLink.value = shareUrl;
+        
+        // Show modal
+        shareModalContainer.style.display = 'flex';
+      })
+      .catch(error => {
+        console.error('Error sharing script:', error);
+        showNotification('Error sharing script');
+      });
+    }
+    
+    function copyShareLink() {
+      shareLink.select();
+      document.execCommand('copy');
+      
+      showNotification('Share link copied to clipboard');
+    }
+    
+    // Feedback functionality
+    function sendFeedback() {
+      const feedback = document.getElementById('feedback-text').value.trim();
+      
+      if (!feedback) {
+        showNotification('Please enter feedback');
+        return;
+      }
+      
+      // Post feedback
+      fetch('/api/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text: feedback })
+      })
+      .then(response => response.json())
+      .then(() => {
+        // Clear feedback text
+        document.getElementById('feedback-text').value = '';
+        
+        // Hide feedback box
+        toggleFeedback();
+        
+        showNotification('Feedback sent. Thank you!');
+      })
+      .catch(error => {
+        console.error('Error sending feedback:', error);
+        showNotification('Error sending feedback');
+      });
+    }
+    
+    // Export script to PDF
+    function exportScript() {
+      // Simple export function - could be enhanced with proper PDF formatting
+      const content = editor.innerHTML;
+      const charactersArray = Array.from(scriptCharacters);
+      
+      // Create a hidden link element
+      const element = document.createElement('a');
+      
+      // Create content
+      const scriptText = Array.from(document.querySelectorAll('.element'))
+        .map(el => {
+          const type = getElementType(el);
+          const text = el.textContent.trim();
+          
+          switch(type) {
+            case 'scene-heading':
+              return text + '\n\n';
+            case 'action':
+              return text + '\n\n';
+            case 'character':
+              return '\n' + text + '\n';
+            case 'parenthetical':
+              return text + '\n';
+            case 'dialogue':
+              return text + '\n\n';
+            case 'transition':
+              return '\n' + text + '\n\n';
+            default:
+              return text + '\n';
+          }
+        })
+        .join('');
+      
+      // Create blob
+      const file = new Blob([scriptText], {type: 'text/plain'});
+      
+      // Set properties
+      element.href = URL.createObjectURL(file);
+      element.download = 'screenplay.txt';
+      
+      // Trigger download
+      document.body.appendChild(element);
+      element.click();
+      
+      // Clean up
+      document.body.removeChild(element);
+      
+      showNotification('Script exported');
+    }
+    
+    // Get element type from element's classList (handles multiple classes properly)
+    function getElementType(element) {
+      if (!element || !element.classList) return 'action'; // Default
+      
+      const elementTypes = ['scene-heading', 'action', 'character', 
+                           'dialogue', 'parenthetical', 'transition'];
+      
+      for (const type of elementTypes) {
+        if (element.classList.contains(type)) {
+          return type;
+        }
+      }
+      
+      return 'action'; // Default if no type found
+    }
+  </script>
 </body>
 </html>
