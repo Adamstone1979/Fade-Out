@@ -12,6 +12,7 @@
       font-family: Courier, monospace;
       margin: 0;
       padding: 0;
+      line-height: 1.2;
     }
     
     body.light {
@@ -32,6 +33,12 @@
       z-index: 1000;
       border-bottom: 1px solid #472e63;
       direction: ltr;
+    }
+    
+    body.light .app-header {
+      background-color: #f8f8f8;
+      color: #000000;
+      border-bottom: 1px solid #cccccc;
     }
     
     .app-name {
@@ -60,6 +67,11 @@
       gap: 5px;
     }
 
+    body.light .toolbar {
+      background-color: #e3e3e3;
+      border-bottom: 2px solid #cccccc;
+    }
+
     /* Toolbar Rows */
     .toolbar-row {
       display: flex;
@@ -68,12 +80,28 @@
       justify-content: center;
     }
 
+    /* Page Counter */
+    .page-counter {
+      position: fixed;
+      right: 20px;
+      top: 130px;
+      background-color: #2a1240;
+      padding: 5px 10px;
+      border-radius: 3px;
+      z-index: 999;
+    }
+
+    body.light .page-counter {
+      background-color: #e3e3e3;
+    }
+
     /* Editor */
     #editor {
       padding: 150px 20px 20px 20px;
       outline: none;
       white-space: pre-wrap;
       min-height: 80vh;
+      font-size: 12pt;
     }
 
     /* Title Page Styles */
@@ -133,34 +161,65 @@
     
     .rtl-element {
       direction: rtl;
-      text-align: right;
+      unicode-bidi: embed;
     }
     
-    .rtl-element.scene-heading, 
-    .rtl-element.action {
-      text-align: right;
-    }
-    
-    .rtl-element.transition {
-      text-align: left;
-    }
-
-    /* Element Styles */
+    /* Proper Screenplay Formatting */
     .element { margin: 0; padding: 2px 0; }
-    .scene-heading { text-transform: uppercase; margin: 12px 0; text-align: left; font-weight: bold; }
-    .action { text-align: left; margin: 12px 0; }
-    .character { text-align: center; margin: 30px auto 10px auto; width: 60%; font-weight: bold; text-transform: uppercase; }
-    .dialogue { text-align: left; margin: 0 auto 15px auto; width: 70%; }
-    .parenthetical { font-style: italic; margin: 0 auto 10px auto; width: 50%; text-align: center; }
-    .transition { text-align: right; margin-right: 10%; font-weight: bold; text-transform: uppercase; }
+    .scene-heading { 
+      text-transform: uppercase; 
+      margin: 1.5em 0 1em 0; 
+      text-align: left; 
+      font-weight: bold; 
+      padding-left: 1.5in;
+      padding-right: 1.5in;
+    }
+    .action { 
+      margin: 1em 0; 
+      padding-left: 1.5in;
+      padding-right: 1.5in;
+    }
+    .character { 
+      text-align: center; 
+      margin: 1.5em 0 0 0; 
+      padding-left: 3.5in;
+      padding-right: 3.5in;
+      font-weight: bold; 
+      text-transform: uppercase; 
+    }
+    .dialogue { 
+      margin: 0.5em 0 1.5em 0; 
+      padding-left: 2.5in;
+      padding-right: 2.5in;
+    }
+    .parenthetical { 
+      font-style: italic; 
+      margin: 0.5em 0; 
+      padding-left: 3in;
+      padding-right: 3in;
+    }
+    .transition { 
+      text-align: right; 
+      margin: 1.5em 0; 
+      padding-right: 1.5in;
+      font-weight: bold; 
+      text-transform: uppercase; 
+    }
     .active-line { background-color: rgba(255, 215, 0, 0.1); }
 
-    /* Light Mode */
-    body.light .toolbar {
-      background-color: #e3e3e3;
-      border-bottom: 2px solid #cccccc;
+    /* RTL Formatting Adjustments */
+    body[dir="rtl"] .scene-heading,
+    body[dir="rtl"] .action {
+      text-align: right;
+    }
+    
+    body[dir="rtl"] .transition {
+      text-align: left;
+      padding-right: 0;
+      padding-left: 1.5in;
     }
 
+    /* Toolbar buttons */
     .toolbar button {
       background-color: #472e63;
       color: white;
@@ -169,6 +228,8 @@
       cursor: pointer;
       border-radius: 3px;
       min-width: 100px;
+      font-family: Courier, monospace;
+      font-size: 12px;
     }
 
     body.light .toolbar button {
@@ -314,11 +375,16 @@
 
     /* Feedback box */
     #feedback-box {
-      display: none;
-      margin: 10px;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 300px;
+      background-color: #2a1240;
+      border: 1px solid gold;
+      border-radius: 5px;
       padding: 15px;
-      background-color: rgba(255, 255, 255, 0.1);
-      border-radius: 3px;
+      z-index: 1000;
+      display: none;
     }
 
     #feedback-text {
@@ -338,6 +404,11 @@
       color: #000000;
     }
 
+    .feedback-buttons {
+      display: flex;
+      justify-content: space-between;
+    }
+
     #send-feedback-btn {
       background-color: gold;
       color: #1c0f2e;
@@ -347,9 +418,23 @@
       border-radius: 3px;
     }
 
+    #cancel-feedback-btn {
+      background: none;
+      border: 1px solid gold;
+      color: gold;
+      padding: 8px 16px;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+
     body.light #send-feedback-btn {
       background-color: #000000;
       color: white;
+    }
+
+    body.light #cancel-feedback-btn {
+      border: 1px solid #000000;
+      color: #000000;
     }
     
     /* Transition dropdown */
@@ -397,6 +482,34 @@
     body.light .word-type {
       color: #000000;
     }
+    
+    /* Saved script items */
+    .saved-script-item {
+      padding: 8px;
+      margin: 5px 0;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .saved-script-item:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .saved-script-item.selected {
+      background-color: rgba(255, 215, 0, 0.2);
+    }
+    
+    body.light .saved-script-item {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    body.light .saved-script-item:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    body.light .saved-script-item.selected {
+      background-color: rgba(0, 0, 0, 0.1);
+    }
   </style>
 </head>
 <body class="dark-mode">
@@ -418,8 +531,8 @@
       <button id="transition-btn" class="element-button" data-type="transition">TRANSITION</button>
     </div>
     <div class="toolbar-row">
-      <button id="undo-btn">UNDO (Ctrl+Z)</button>
-      <button id="redo-btn">REDO (Ctrl+Y)</button>
+      <button id="undo-btn">UNDO</button>
+      <button id="redo-btn">REDO</button>
       <button id="thesaurus-btn">THESAURUS</button>
       <button id="dictionary-btn">DICTIONARY</button>
       <button id="save-btn">SAVE</button>
@@ -430,6 +543,9 @@
       <button id="feedback-btn">FEEDBACK</button>
     </div>
   </div>
+
+  <!-- Page Counter -->
+  <div class="page-counter" id="page-counter">Page 1</div>
 
   <!-- Title Page -->
   <div id="title-page" class="title-page">
@@ -480,14 +596,27 @@
   <!-- Feedback box -->
   <div id="feedback-box">
     <textarea id="feedback-text" placeholder="Enter your feedback here..."></textarea>
-    <button id="send-feedback-btn">Send Feedback</button>
+    <div class="feedback-buttons">
+      <button id="cancel-feedback-btn">Cancel</button>
+      <button id="send-feedback-btn">Send Feedback</button>
+    </div>
   </div>
   
   <!-- Save Modal -->
   <div class="modal-container" id="save-modal-container">
     <div class="modal">
       <h2>Save Script</h2>
-      <input type="text" id="save-script-title" placeholder="Script Title">
+      <div style="margin: 10px 0;">
+        <label for="save-script-title">Script Title:</label>
+        <input type="text" id="save-script-title" placeholder="Enter script title">
+      </div>
+      <div style="margin: 10px 0;">
+        <label for="save-location">Save Location:</label>
+        <select id="save-location" style="width: 100%; margin-top: 5px;">
+          <option value="local">Browser Storage</option>
+          <option value="download">Download File</option>
+        </select>
+      </div>
       <div class="modal-buttons">
         <button class="cancel-btn" id="save-cancel">Cancel</button>
         <button class="confirm-btn" id="save-confirm">Save</button>
@@ -499,7 +628,19 @@
   <div class="modal-container" id="load-modal-container">
     <div class="modal">
       <h2>Load Script</h2>
-      <div id="saved-scripts-list" style="max-height: 200px; overflow-y: auto; margin: 10px 0;"></div>
+      <div style="margin: 10px 0;">
+        <label for="load-location">Load From:</label>
+        <select id="load-location" style="width: 100%; margin-top: 5px;">
+          <option value="local">Browser Storage</option>
+          <option value="upload">Upload File</option>
+        </select>
+      </div>
+      <div id="saved-scripts-container" style="display: block;">
+        <div id="saved-scripts-list" style="max-height: 200px; overflow-y: auto; margin: 10px 0;"></div>
+      </div>
+      <div id="upload-container" style="display: none; margin: 10px 0;">
+        <input type="file" id="script-upload" accept=".fdx,.html,.txt">
+      </div>
       <div class="modal-buttons">
         <button class="cancel-btn" id="load-cancel">Cancel</button>
         <button class="confirm-btn" id="load-confirm">Load</button>
@@ -511,11 +652,18 @@
   <div class="modal-container" id="export-modal-container">
     <div class="modal">
       <h2>Export Script</h2>
-      <select id="export-format">
-        <option value="pdf">PDF</option>
-        <option value="fdx">Final Draft (FDX)</option>
-        <option value="html">HTML</option>
-      </select>
+      <div style="margin: 10px 0;">
+        <label for="export-format">Format:</label>
+        <select id="export-format" style="width: 100%; margin-top: 5px;">
+          <option value="pdf">PDF</option>
+          <option value="fdx">Final Draft (FDX)</option>
+          <option value="html">HTML</option>
+        </select>
+      </div>
+      <div style="margin: 10px 0;">
+        <label for="export-filename">File Name:</label>
+        <input type="text" id="export-filename" placeholder="Enter file name" style="width: 100%; margin-top: 5px;">
+      </div>
       <div class="modal-buttons">
         <button class="cancel-btn" id="export-cancel">Cancel</button>
         <button class="confirm-btn" id="export-confirm">Export</button>
@@ -528,7 +676,11 @@
     <div class="modal">
       <h2>Thesaurus</h2>
       <input type="text" id="thesaurus-search" placeholder="Search for a word...">
-      <div id="thesaurus-results"></div>
+      <div id="thesaurus-results" style="margin-top: 15px; max-height: 300px; overflow-y: auto;">
+        <div style="padding: 10px; text-align: center; color: #999;">
+          Thesaurus functionality would be implemented with an API in a full version
+        </div>
+      </div>
       <div class="modal-buttons">
         <button class="cancel-btn" id="thesaurus-cancel">Close</button>
       </div>
@@ -540,7 +692,11 @@
     <div class="modal">
       <h2>Dictionary</h2>
       <input type="text" id="dictionary-search" placeholder="Search for a word...">
-      <div id="dictionary-results"></div>
+      <div id="dictionary-results" style="margin-top: 15px; max-height: 300px; overflow-y: auto;">
+        <div style="padding: 10px; text-align: center; color: #999;">
+          Dictionary functionality would be implemented with an API in a full version
+        </div>
+      </div>
       <div class="modal-buttons">
         <button class="cancel-btn" id="dictionary-cancel">Close</button>
       </div>
@@ -568,8 +724,16 @@
       'LIGHT': 'مضيء',
       'DARK': 'مظلم',
       'BACK TO EDITOR': 'العودة إلى المحرر',
-      'UNDO (CTRL+Z)': 'تراجع',
-      'REDO (CTRL+Y)': 'إعادة'
+      'UNDO': 'تراجع',
+      'REDO': 'إعادة',
+      'Format:': 'التنسيق:',
+      'File Name:': 'اسم الملف:',
+      'Script Title:': 'عنوان السيناريو:',
+      'Save Location:': 'مكان الحفظ:',
+      'Load From:': 'تحميل من:',
+      'Browser Storage': 'تخزين المتصفح',
+      'Download File': 'تنزيل الملف',
+      'Upload File': 'رفع ملف'
     };
 
     // Global state
@@ -579,12 +743,13 @@
     let undoStack = [];
     let redoStack = [];
     let isUndoing = false;
+    let pageCount = 1;
 
     // Initialize the editor
     document.addEventListener('DOMContentLoaded', function() {
       // Start with blank editor
       document.getElementById('editor').style.display = 'block';
-      addNewElement('scene-heading');
+      updatePageCounter();
       
       // Set up event listeners
       setupListeners();
@@ -598,17 +763,21 @@
       document.getElementById('title-page-btn').addEventListener('click', function() {
         document.getElementById('title-page').style.display = 'block';
         document.getElementById('editor').style.display = 'none';
+        document.querySelectorAll('.element-button').forEach(b => b.classList.remove('active'));
       });
       
       // Back to editor button
       document.getElementById('back-to-editor-btn').addEventListener('click', function() {
         document.getElementById('title-page').style.display = 'none';
         document.getElementById('editor').style.display = 'block';
+        document.getElementById('scene-heading-btn').classList.add('active');
       });
 
       // Element type buttons
       document.querySelectorAll('.element-button').forEach(btn => {
         btn.addEventListener('click', function() {
+          if (document.getElementById('title-page').style.display === 'block') return;
+          
           currentElement = this.dataset.type;
           document.querySelectorAll('.element-button').forEach(b => b.classList.remove('active'));
           this.classList.add('active');
@@ -627,6 +796,18 @@
       document.getElementById('dictionary-btn').addEventListener('click', showDictionary);
       document.getElementById('undo-btn').addEventListener('click', undo);
       document.getElementById('redo-btn').addEventListener('click', redo);
+      document.getElementById('cancel-feedback-btn').addEventListener('click', toggleFeedback);
+      
+      // Load location toggle
+      document.getElementById('load-location').addEventListener('change', function() {
+        if (this.value === 'local') {
+          document.getElementById('saved-scripts-container').style.display = 'block';
+          document.getElementById('upload-container').style.display = 'none';
+        } else {
+          document.getElementById('saved-scripts-container').style.display = 'none';
+          document.getElementById('upload-container').style.display = 'block';
+        }
+      });
       
       // Modal buttons
       document.getElementById('save-cancel').addEventListener('click', () => {
@@ -636,25 +817,41 @@
       document.getElementById('save-confirm').addEventListener('click', () => {
         const title = document.getElementById('save-script-title').value.trim() || 'Untitled Script';
         const content = editor.innerHTML;
+        const saveLocation = document.getElementById('save-location').value;
         
-        // Save to localStorage
-        const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
-        scripts[title] = {
-          content,
-          characters: Array.from(scriptCharacters),
-          timestamp: Date.now(),
-          title: document.getElementById('script-title').value,
-          author: document.getElementById('written-by').value,
-          contact: {
-            email: document.getElementById('contact-email').value,
-            phone: document.getElementById('contact-phone').value
-          },
-          awards: document.getElementById('awards').value
-        };
-        localStorage.setItem('scripts', JSON.stringify(scripts));
-        
-        document.getElementById('save-modal-container').style.display = 'none';
-        showNotification(`Script "${title}" saved successfully`);
+        if (saveLocation === 'local') {
+          // Save to localStorage
+          const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+          scripts[title] = {
+            content,
+            characters: Array.from(scriptCharacters),
+            timestamp: Date.now(),
+            title: document.getElementById('script-title').value,
+            author: document.getElementById('written-by').value,
+            contact: {
+              email: document.getElementById('contact-email').value,
+              phone: document.getElementById('contact-phone').value
+            },
+            awards: document.getElementById('awards').value
+          };
+          localStorage.setItem('scripts', JSON.stringify(scripts));
+          
+          document.getElementById('save-modal-container').style.display = 'none';
+          showNotification(`Script "${title}" saved to browser storage`);
+        } else {
+          // Download as file
+          const blob = new Blob([content], {type: 'text/plain'});
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.txt`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          
+          document.getElementById('save-modal-container').style.display = 'none';
+          showNotification(`Script "${title}" downloaded`);
+        }
       });
       
       document.getElementById('load-cancel').addEventListener('click', () => {
@@ -662,30 +859,53 @@
       });
       
       document.getElementById('load-confirm').addEventListener('click', () => {
-        const selected = document.querySelector('.saved-script-item.selected');
-        if (!selected) {
-          showNotification('Please select a script to load');
-          return;
-        }
+        const loadLocation = document.getElementById('load-location').value;
         
-        const scriptName = selected.getAttribute('data-name');
-        const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
-        
-        if (scripts[scriptName]) {
-          editor.innerHTML = scripts[scriptName].content;
-          if (scripts[scriptName].characters) {
-            scriptCharacters = new Set(scripts[scriptName].characters);
+        if (loadLocation === 'local') {
+          const selected = document.querySelector('.saved-script-item.selected');
+          if (!selected) {
+            showNotification('Please select a script to load');
+            return;
           }
           
-          // Load title page info
-          document.getElementById('script-title').value = scripts[scriptName].title || '';
-          document.getElementById('written-by').value = scripts[scriptName].author || '';
-          document.getElementById('contact-email').value = scripts[scriptName].contact?.email || '';
-          document.getElementById('contact-phone').value = scripts[scriptName].contact?.phone || '';
-          document.getElementById('awards').value = scripts[scriptName].awards || '';
+          const scriptName = selected.getAttribute('data-name');
+          const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
           
-          document.getElementById('load-modal-container').style.display = 'none';
-          showNotification(`Script "${scriptName}" loaded successfully`);
+          if (scripts[scriptName]) {
+            editor.innerHTML = scripts[scriptName].content;
+            if (scripts[scriptName].characters) {
+              scriptCharacters = new Set(scripts[scriptName].characters);
+            }
+            
+            // Load title page info
+            document.getElementById('script-title').value = scripts[scriptName].title || '';
+            document.getElementById('written-by').value = scripts[scriptName].author || '';
+            document.getElementById('contact-email').value = scripts[scriptName].contact?.email || '';
+            document.getElementById('contact-phone').value = scripts[scriptName].contact?.phone || '';
+            document.getElementById('awards').value = scripts[scriptName].awards || '';
+            
+            document.getElementById('load-modal-container').style.display = 'none';
+            showNotification(`Script "${scriptName}" loaded successfully`);
+            updatePageCounter();
+          }
+        } else {
+          const fileInput = document.getElementById('script-upload');
+          if (fileInput.files.length === 0) {
+            showNotification('Please select a file to upload');
+            return;
+          }
+          
+          const file = fileInput.files[0];
+          const reader = new FileReader();
+          
+          reader.onload = function(e) {
+            editor.innerHTML = e.target.result;
+            document.getElementById('load-modal-container').style.display = 'none';
+            showNotification(`Script "${file.name}" loaded successfully`);
+            updatePageCounter();
+          };
+          
+          reader.readAsText(file);
         }
       });
       
@@ -695,7 +915,14 @@
       
       document.getElementById('export-confirm').addEventListener('click', () => {
         const format = document.getElementById('export-format').value;
-        exportScript(format);
+        let filename = document.getElementById('export-filename').value.trim();
+        const defaultTitle = document.getElementById('script-title').value.trim() || 'Untitled Script';
+        
+        if (!filename) {
+          filename = defaultTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        }
+        
+        exportScript(format, filename);
       });
       
       document.getElementById('send-feedback-btn').addEventListener('click', () => {
@@ -710,14 +937,6 @@
         showNotification('Feedback sent!');
         document.getElementById('feedback-text').value = '';
         document.getElementById('feedback-box').style.display = 'none';
-      });
-      
-      document.getElementById('thesaurus-cancel').addEventListener('click', () => {
-        document.getElementById('thesaurus-modal-container').style.display = 'none';
-      });
-      
-      document.getElementById('dictionary-cancel').addEventListener('click', () => {
-        document.getElementById('dictionary-modal-container').style.display = 'none';
       });
       
       // Thesaurus search
@@ -748,6 +967,17 @@
         } else if (e.ctrlKey && e.key === 'y') {
           e.preventDefault();
           redo();
+        }
+        
+        // Auto-scroll when reaching bottom
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          const rect = range.getBoundingClientRect();
+          
+          if (rect.bottom > window.innerHeight - 50) {
+            window.scrollBy(0, 50);
+          }
         }
       });
       
@@ -813,6 +1043,7 @@
           }
         }
         
+        updatePageCounter();
         saveState();
       });
       
@@ -853,10 +1084,16 @@
         
         if (type === 'transition') {
           div.style.textAlign = 'left';
+          div.style.paddingLeft = '1.5in';
+          div.style.paddingRight = '0';
+        } else if (type === 'scene-heading' || type === 'action') {
+          div.style.textAlign = 'right';
         }
       } else {
         if (type === 'transition') {
           div.style.textAlign = 'right';
+          div.style.paddingRight = '1.5in';
+          div.style.paddingLeft = '0';
         }
       }
       
@@ -898,6 +1135,7 @@
         });
       }
       
+      updatePageCounter();
       saveState();
     }
 
@@ -937,6 +1175,12 @@
       addNewElement(nextType);
       currentElement = nextType;
       updateActiveButton();
+      
+      // Auto-scroll to keep the new line visible
+      const newActiveElement = document.querySelector('.active-line');
+      if (newActiveElement) {
+        newActiveElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
     }
 
     // Cycle through element types with Tab key
@@ -971,6 +1215,10 @@
         activeElement.classList.add('rtl-element');
         if (nextType === 'transition') {
           activeElement.style.textAlign = 'left';
+          activeElement.style.paddingLeft = '1.5in';
+          activeElement.style.paddingRight = '0';
+        } else if (nextType === 'scene-heading' || nextType === 'action') {
+          activeElement.style.textAlign = 'right';
         } else {
           activeElement.style.textAlign = '';
         }
@@ -978,6 +1226,8 @@
         activeElement.classList.remove('rtl-element');
         if (nextType === 'transition') {
           activeElement.style.textAlign = 'right';
+          activeElement.style.paddingRight = '1.5in';
+          activeElement.style.paddingLeft = '0';
         } else {
           activeElement.style.textAlign = '';
         }
@@ -991,6 +1241,7 @@
       
       currentElement = nextType;
       updateActiveButton();
+      saveState();
     }
 
     // Update active button in toolbar
@@ -1103,6 +1354,14 @@
         saveModal.style.display = 'flex';
         document.getElementById('save-script-title').value = document.getElementById('script-title').value || 'Untitled Script';
         document.getElementById('save-script-title').focus();
+        
+        // Populate saved scripts list
+        const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+        const scriptsList = Object.keys(scripts).sort((a, b) => scripts[b].timestamp - scripts[a].timestamp);
+        
+        if (scriptsList.length > 0) {
+          document.getElementById('save-location').value = 'local';
+        }
       }
     }
 
@@ -1116,7 +1375,9 @@
         const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
         
         if (Object.keys(scripts).length === 0) {
-          scriptsList.innerHTML = '<div style="padding: 10px;">No saved scripts found</div>';
+          document.getElementById('load-location').value = 'upload';
+          document.getElementById('saved-scripts-container').style.display = 'none';
+          document.getElementById('upload-container').style.display = 'block';
         } else {
           const sortedScripts = Object.entries(scripts).sort((a, b) => b[1].timestamp - a[1].timestamp);
           
@@ -1150,6 +1411,10 @@
             
             scriptsList.appendChild(item);
           });
+          
+          document.getElementById('load-location').value = 'local';
+          document.getElementById('saved-scripts-container').style.display = 'block';
+          document.getElementById('upload-container').style.display = 'none';
         }
         
         loadModal.style.display = 'flex';
@@ -1158,29 +1423,36 @@
 
     // Show export modal
     function showExportModal() {
-      document.getElementById('export-modal-container').style.display = 'flex';
+      const exportModal = document.getElementById('export-modal-container');
+      if (exportModal) {
+        const defaultTitle = document.getElementById('script-title').value.trim() || 'Untitled Script';
+        document.getElementById('export-filename').value = defaultTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        exportModal.style.display = 'flex';
+      }
     }
 
     // Export script
-    function exportScript(format) {
+    function exportScript(format, filename) {
       const title = document.getElementById('script-title').value.trim() || 'Untitled Script';
       const content = document.getElementById('editor').innerHTML;
       
       document.getElementById('export-modal-container').style.display = 'none';
       
       if (format === 'html') {
-        const exportHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title><style>body{font-family:Courier,monospace;line-height:1.5;margin:40px}.scene-heading{text-transform:uppercase;font-weight:bold;margin-top:2em}.action{margin:1em 0}.character{text-transform:uppercase;margin-left:200px;margin-bottom:0}.parenthetical{margin-left:160px;margin-bottom:0}.dialogue{margin-left:100px;margin-right:100px;margin-bottom:1em}.transition{text-align:right;text-transform:uppercase;margin:2em 0}</style></head><body><h1>${title}</h1><div id="screenplay">${content}</div></body></html>`;
+        const exportHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title><style>body{font-family:Courier,monospace;line-height:1.5;margin:40px}.scene-heading{text-transform:uppercase;font-weight:bold;margin-top:2em;padding-left:1.5in;padding-right:1.5in}.action{margin:1em 0;padding-left:1.5in;padding-right:1.5in}.character{text-transform:uppercase;margin:1.5em 0 0 0;padding-left:3.5in;padding-right:3.5in;font-weight:bold}.dialogue{margin:0.5em 0 1.5em 0;padding-left:2.5in;padding-right:2.5in}.parenthetical{font-style:italic;margin:0.5em 0;padding-left:3in;padding-right:3in}.transition{text-align:right;margin:1.5em 0;padding-right:1.5in;font-weight:bold;text-transform:uppercase}</style></head><body><h1>${title}</h1><div id="screenplay">${content}</div></body></html>`;
         
         const blob = new Blob([exportHtml], {type: 'text/html'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.html`;
+        a.download = `${filename}.html`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
       } else {
-        showNotification(`${format.toUpperCase()} export would be implemented in a full version`);
+        // For PDF and FDX, we would use a library in a real implementation
+        showNotification(`${format.toUpperCase()} export would be implemented with a library in a full version`);
+        return;
       }
       
       showNotification(`Script exported as ${format.toUpperCase()} successfully!`);
@@ -1195,8 +1467,7 @@
     // Search thesaurus
     function searchThesaurus(word) {
       const resultsDiv = document.getElementById('thesaurus-results');
-      resultsDiv.innerHTML = '<div style="padding: 10px;">Thesaurus results would appear here in a full version</div>';
-      // In a real implementation, this would call a thesaurus API
+      resultsDiv.innerHTML = '<div style="padding: 10px; text-align: center;">Thesaurus functionality would be implemented with an API in a full version</div>';
     }
 
     // Show dictionary modal
@@ -1208,8 +1479,7 @@
     // Search dictionary
     function searchDictionary(word) {
       const resultsDiv = document.getElementById('dictionary-results');
-      resultsDiv.innerHTML = '<div style="padding: 10px;">Dictionary results would appear here in a full version</div>';
-      // In a real implementation, this would call a dictionary API
+      resultsDiv.innerHTML = '<div style="padding: 10px; text-align: center;">Dictionary functionality would be implemented with an API in a full version</div>';
     }
 
     // Toggle theme
@@ -1236,6 +1506,8 @@
           el.classList.add('rtl-element');
           if (el.classList.contains('transition')) {
             el.style.textAlign = 'left';
+            el.style.paddingLeft = '1.5in';
+            el.style.paddingRight = '0';
           } else if (el.classList.contains('scene-heading') || el.classList.contains('action')) {
             el.style.textAlign = 'right';
           }
@@ -1250,12 +1522,20 @@
           el.classList.remove('rtl-element');
           if (el.classList.contains('transition')) {
             el.style.textAlign = 'right';
+            el.style.paddingRight = '1.5in';
+            el.style.paddingLeft = '0';
           } else {
             el.style.textAlign = '';
           }
         });
         
         updateToolbarLabels(false);
+      }
+      
+      // Update cursor position
+      const activeElement = document.querySelector('.active-line');
+      if (activeElement) {
+        setCaretToEnd(activeElement);
       }
     }
 
@@ -1271,8 +1551,8 @@
       document.getElementById('load-btn').textContent = useArabic ? arabicLabels['LOAD'] : 'LOAD';
       document.getElementById('export-btn').textContent = useArabic ? arabicLabels['EXPORT'] : 'EXPORT';
       document.getElementById('feedback-btn').textContent = useArabic ? arabicLabels['FEEDBACK'] : 'FEEDBACK';
-      document.getElementById('undo-btn').textContent = useArabic ? arabicLabels['UNDO (CTRL+Z)'] : 'UNDO (Ctrl+Z)';
-      document.getElementById('redo-btn').textContent = useArabic ? arabicLabels['REDO (CTRL+Y)'] : 'REDO (Ctrl+Y)';
+      document.getElementById('undo-btn').textContent = useArabic ? arabicLabels['UNDO'] : 'UNDO';
+      document.getElementById('redo-btn').textContent = useArabic ? arabicLabels['REDO'] : 'REDO';
       document.getElementById('thesaurus-btn').textContent = useArabic ? arabicLabels['THESAURUS'] : 'THESAURUS';
       document.getElementById('dictionary-btn').textContent = useArabic ? arabicLabels['DICTIONARY'] : 'DICTIONARY';
       document.getElementById('back-to-editor-btn').textContent = useArabic ? arabicLabels['BACK TO EDITOR'] : 'BACK TO EDITOR';
@@ -1302,6 +1582,22 @@
       }, 2000);
     }
 
+    // Update page counter
+    function updatePageCounter() {
+      // Simple page count estimation based on content height
+      const editor = document.getElementById('editor');
+      const lineHeight = 20; // Approximate line height in pixels
+      const pageHeight = 900; // Approximate page height in pixels
+      
+      const contentHeight = editor.scrollHeight;
+      const newPageCount = Math.max(1, Math.ceil(contentHeight / pageHeight));
+      
+      if (newPageCount !== pageCount) {
+        pageCount = newPageCount;
+        document.getElementById('page-counter').textContent = `Page ${pageCount}`;
+      }
+    }
+
     // Undo/redo functionality
     function saveState() {
       if (!isUndoing) {
@@ -1318,6 +1614,7 @@
         redoStack.push(editor.innerHTML);
         editor.innerHTML = undoStack.pop();
         isUndoing = false;
+        updatePageCounter();
       }
     }
 
@@ -1328,6 +1625,7 @@
         undoStack.push(editor.innerHTML);
         editor.innerHTML = redoStack.pop();
         isUndoing = false;
+        updatePageCounter();
       }
     }
   </script>
