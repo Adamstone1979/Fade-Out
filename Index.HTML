@@ -1,652 +1,1634 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Screenplay App</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Courier New', Courier, monospace;
-            background-color: #f5f5f5;
-            overflow: hidden;
-        }
-        
-        #toolbar {
-            background-color: #333;
-            color: white;
-            padding: 8px;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            height: 40px;
-            box-sizing: border-box;
-        }
-        
-        #toolbar button, #toolbar select {
-            padding: 5px 10px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        
-        #document-container {
-            margin-top: 56px;
-            padding: 20px;
-            height: calc(100vh - 76px);
-            overflow-y: auto;
-            box-sizing: border-box;
-        }
-        
-        #screenplay-content {
-            width: 90%;
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 40px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        
-        .element {
-            margin-bottom: 20px;
-            position: relative;
-        }
-        
-        .scene-heading, .action, .character, .dialogue, .parenthetical, .transition {
-            min-height: 20px;
-            outline: none;
-            padding: 2px;
-        }
-        
-        .scene-heading {
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-left: 15%;
-            width: 70%;
-        }
-        
-        .action {
-            margin-left: 10%;
-            width: 80%;
-        }
-        
-        .character {
-            margin-left: 40%;
-            width: 20%;
-            text-transform: uppercase;
-        }
-        
-        .dialogue {
-            margin-left: 25%;
-            width: 50%;
-        }
-        
-        .parenthetical {
-            margin-left: 32%;
-            width: 20%;
-            font-style: italic;
-        }
-        
-        .transition {
-            margin-left: 60%;
-            width: 20%;
-            text-transform: uppercase;
-            text-align: right;
-        }
-        
-        .element-menu {
-            position: absolute;
-            left: -100px;
-            top: 0;
-            background: white;
-            border: 1px solid #ccc;
-            padding: 5px;
-            display: none;
-            z-index: 100;
-        }
-        
-        .element:hover .element-menu {
-            display: block;
-        }
-        
-        .element-menu button {
-            display: block;
-            width: 100%;
-            margin: 2px 0;
-            background: none;
-            border: none;
-            text-align: left;
-            cursor: pointer;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 20px;
-            z-index: 1001;
-            box-shadow: 0 0 20px rgba(0,0,0,0.3);
-            width: 500px;
-            max-width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        
-        .modal-content {
-            margin-bottom: 15px;
-        }
-        
-        .modal-buttons {
-            text-align: right;
-        }
-        
-        .modal-buttons button {
-            margin-left: 10px;
-        }
-        
-        .tab-container {
-            display: flex;
-            border-bottom: 1px solid #ccc;
-            margin-bottom: 10px;
-        }
-        
-        .tab {
-            padding: 8px 15px;
-            cursor: pointer;
-            border: 1px solid transparent;
-            border-bottom: none;
-            margin-right: 5px;
-            background: #f0f0f0;
-        }
-        
-        .tab.active {
-            background: white;
-            border-color: #ccc;
-            border-bottom: 1px solid white;
-            margin-bottom: -1px;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .word-result {
-            margin-bottom: 15px;
-            padding: 10px;
-            border: 1px solid #eee;
-        }
-        
-        #thesaurus-search, #dictionary-search {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            box-sizing: border-box;
-        }
-        
-        #thesaurus-results, #dictionary-results {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .rtl-text {
-            direction: rtl;
-            text-align: right;
-            font-family: 'Arial', sans-serif;
-        }
-        
-        .loading {
-            color: #666;
-            font-style: italic;
-        }
-        
-        .error {
-            color: #d32f2f;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fade Out - Professional Screenplay Editor</title>
+  <style>
+    /* Dark Theme & Typography */
+    body {
+      background-color: #1c0f2e;
+      color: white;
+      font-family: Courier, monospace;
+      margin: 0;
+      padding: 0;
+      line-height: 1.2;
+    }
+    
+    body.light {
+      background-color: #f8f8f8;
+      color: #000000;
+    }
+
+    /* App Header */
+    .app-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background-color: #1c0f2e;
+      color: white;
+      text-align: center;
+      padding: 10px 0;
+      z-index: 1000;
+      border-bottom: 1px solid #472e63;
+      direction: ltr;
+    }
+    
+    body.light .app-header {
+      background-color: #f8f8f8;
+      color: #000000;
+      border-bottom: 1px solid #cccccc;
+    }
+    
+    .app-name {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    
+    .tagline {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    /* Toolbar */
+    .toolbar {
+      position: fixed;
+      top: 70px;
+      left: 0;
+      right: 0;
+      background-color: #2a1240;
+      border-bottom: 2px solid #472e63;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      z-index: 999;
+      gap: 5px;
+    }
+
+    body.light .toolbar {
+      background-color: #e3e3e3;
+      border-bottom: 2px solid #cccccc;
+    }
+
+    /* Toolbar Rows */
+    .toolbar-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      justify-content: center;
+    }
+
+    /* Page Counter */
+    .page-counter {
+      position: fixed;
+      right: 20px;
+      top: 130px;
+      background-color: #2a1240;
+      padding: 5px 10px;
+      border-radius: 3px;
+      z-index: 999;
+    }
+
+    body.light .page-counter {
+      background-color: #e3e3e3;
+    }
+
+    /* Editor */
+    #editor {
+      padding: 150px 20px 20px 20px;
+      outline: none;
+      white-space: pre-wrap;
+      min-height: 80vh;
+      font-size: 12pt;
+    }
+
+    /* Title Page Styles */
+    .title-page {
+      display: none;
+      padding: 180px 20px 20px 20px;
+      text-align: center;
+    }
+    
+    .title-page-content {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .title-page input, .title-page textarea {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid gold;
+      color: inherit;
+      font-family: inherit;
+      font-size: inherit;
+      text-align: center;
+      width: 100%;
+      margin: 15px auto;
+      padding: 5px;
+    }
+    
+    .title-page .title {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 40px;
+    }
+    
+    .title-page .author {
+      font-size: 20px;
+      margin-bottom: 60px;
+    }
+    
+    .title-page .contact {
+      font-size: 16px;
+      margin-top: 100px;
+    }
+    
+    .title-page .copyright {
+      font-size: 12px;
+      margin-top: 120px;
+    }
+
+    /* RTL Fixes */
+    body[dir="rtl"] {
+      direction: rtl;
+    }
+    
+    body[dir="rtl"] .toolbar {
+      direction: rtl;
+    }
+    
+    .rtl-element {
+      direction: rtl;
+      unicode-bidi: embed;
+    }
+    
+    /* Proper Screenplay Formatting */
+    .element { margin: 0; padding: 2px 0; }
+    .scene-heading { 
+      text-transform: uppercase; 
+      margin: 1.5em 0 1em 0; 
+      text-align: left; 
+      font-weight: bold; 
+      padding-left: 1.5in;
+      padding-right: 1.5in;
+    }
+    .action { 
+      margin: 1em 0; 
+      padding-left: 1.5in;
+      padding-right: 1.5in;
+    }
+    .character { 
+      text-align: center; 
+      margin: 1.5em 0 0 0; 
+      padding-left: 3.5in;
+      padding-right: 3.5in;
+      font-weight: bold; 
+      text-transform: uppercase; 
+    }
+    .dialogue { 
+      margin: 0.5em 0 1.5em 0; 
+      padding-left: 2.5in;
+      padding-right: 2.5in;
+    }
+    .parenthetical { 
+      font-style: italic; 
+      margin: 0.5em 0; 
+      padding-left: 3in;
+      padding-right: 3in;
+    }
+    .transition { 
+      text-align: right; 
+      margin: 1.5em 0; 
+      padding-right: 1.5in;
+      font-weight: bold; 
+      text-transform: uppercase; 
+    }
+    .active-line { background-color: rgba(255, 215, 0, 0.1); }
+
+    /* RTL Formatting Adjustments */
+    body[dir="rtl"] .scene-heading,
+    body[dir="rtl"] .action {
+      text-align: right;
+    }
+    
+    body[dir="rtl"] .transition {
+      text-align: left;
+      padding-right: 0;
+      padding-left: 1.5in;
+    }
+
+    /* Toolbar buttons */
+    .toolbar button {
+      background-color: #472e63;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 3px;
+      min-width: 100px;
+      font-family: Courier, monospace;
+      font-size: 12px;
+    }
+
+    body.light .toolbar button {
+      background-color: #dddddd;
+      color: #000000;
+    }
+
+    .toolbar button.active {
+      background-color: #6b458e;
+    }
+
+    /* Character suggestions */
+    #character-suggestions {
+      position: absolute;
+      background-color: #2a1240;
+      border: 1px solid gold;
+      border-radius: 3px;
+      max-height: 150px;
+      overflow-y: auto;
+      z-index: 10;
+      display: none;
+    }
+
+    body.light #character-suggestions {
+      background-color: #e3e3e3;
+      border: 1px solid #000000;
+    }
+
+    .character-suggestion-item {
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+
+    .character-suggestion-item:hover {
+      background-color: #472e63;
+    }
+
+    body.light .character-suggestion-item:hover {
+      background-color: #cccccc;
+    }
+
+    /* Notification */
+    #notification {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: gold;
+      color: #1c0f2e;
+      padding: 10px 20px;
+      border-radius: 3px;
+      display: none;
+      z-index: 100;
+    }
+
+    /* Modals */
+    .modal-container {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 1001;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal {
+      background-color: #2a1240;
+      border: 1px solid gold;
+      border-radius: 5px;
+      padding: 20px;
+      width: 90%;
+      max-width: 500px;
+    }
+
+    body.light .modal {
+      background-color: #f8f8f8;
+      border: 1px solid #000000;
+    }
+
+    .modal h2 {
+      margin-top: 0;
+      color: gold;
+    }
+
+    body.light .modal h2 {
+      color: #000000;
+    }
+
+    .modal input, .modal select {
+      width: 100%;
+      padding: 8px;
+      margin: 10px 0;
+      border-radius: 3px;
+      border: 1px solid gold;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    body.light .modal input,
+    body.light .modal select {
+      border: 1px solid #000000;
+      background-color: white;
+      color: #000000;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .cancel-btn {
+      background: none;
+      border: 1px solid gold;
+      color: gold;
+      padding: 8px 16px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .confirm-btn {
+      background-color: gold;
+      color: #1c0f2e;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    body.light .cancel-btn {
+      border: 1px solid #000000;
+      color: #000000;
+    }
+
+    body.light .confirm-btn {
+      background-color: #000000;
+      color: white;
+    }
+
+    /* Feedback box */
+    #feedback-box {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 300px;
+      background-color: #2a1240;
+      border: 1px solid gold;
+      border-radius: 5px;
+      padding: 15px;
+      z-index: 1000;
+      display: none;
+    }
+
+    #feedback-text {
+      width: 100%;
+      height: 80px;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 3px;
+      border: 1px solid gold;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    body.light #feedback-text {
+      border: 1px solid #000000;
+      background-color: white;
+      color: #000000;
+    }
+
+    .feedback-buttons {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    #send-feedback-btn {
+      background-color: gold;
+      color: #1c0f2e;
+      border: none;
+      padding: 8px 16px;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+
+    #cancel-feedback-btn {
+      background: none;
+      border: 1px solid gold;
+      color: gold;
+      padding: 8px 16px;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+
+    body.light #send-feedback-btn {
+      background-color: #000000;
+      color: white;
+    }
+
+    body.light #cancel-feedback-btn {
+      border: 1px solid #000000;
+      color: #000000;
+    }
+    
+    /* Transition dropdown */
+    #transition-dropdown {
+      position: absolute;
+      background-color: #2a1240;
+      border: 1px solid gold;
+      border-radius: 3px;
+      max-height: 250px;
+      width: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+    }
+    
+    .transition-item {
+      padding: 8px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+    }
+    
+    .transition-item:hover {
+      background-color: #472e63;
+    }
+    
+    body.light #transition-dropdown {
+      background-color: #f8f8f8;
+      border: 1px solid #000;
+    }
+    
+    body.light .transition-item:hover {
+      background-color: #ddd;
+    }
+
+    /* Thesaurus/Dictionary Results */
+    .word-result {
+      margin-bottom: 15px;
+    }
+    
+    .word-type {
+      font-style: italic;
+      color: gold;
+    }
+    
+    body.light .word-type {
+      color: #000000;
+    }
+    
+    /* Saved script items */
+    .saved-script-item {
+      padding: 8px;
+      margin: 5px 0;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .saved-script-item:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .saved-script-item.selected {
+      background-color: rgba(255, 215, 0, 0.2);
+    }
+    
+    body.light .saved-script-item {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    body.light .saved-script-item:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    body.light .saved-script-item.selected {
+      background-color: rgba(0, 0, 0, 0.1);
+    }
+  </style>
 </head>
-<body>
-    <div id="toolbar">
-        <button id="new-btn">New</button>
-        <button id="open-btn">Open</button>
-        <button id="save-btn">Save</button>
-        <button id="print-btn">Print</button>
-        <select id="element-select">
-            <option value="action">Action</option>
-            <option value="scene-heading">Scene Heading</option>
-            <option value="character">Character</option>
-            <option value="dialogue">Dialogue</option>
-            <option value="parenthetical">Parenthetical</option>
-            <option value="transition">Transition</option>
+<body class="dark-mode">
+  <!-- Header -->
+  <div class="app-header">
+    <div class="app-name">Fade Out</div>
+    <div class="tagline">Write. Rewrite. Fade Out.</div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-row">
+      <button id="title-page-btn">TITLE PAGE</button>
+      <button id="scene-heading-btn" class="element-button active" data-type="scene-heading">SCENE HEADING</button>
+      <button id="action-btn" class="element-button" data-type="action">ACTION</button>
+      <button id="character-btn" class="element-button" data-type="character">CHARACTER</button>
+      <button id="dialogue-btn" class="element-button" data-type="dialogue">DIALOGUE</button>
+      <button id="parenthetical-btn" class="element-button" data-type="parenthetical">PARENTHETICAL</button>
+      <button id="transition-btn" class="element-button" data-type="transition">TRANSITION</button>
+    </div>
+    <div class="toolbar-row">
+      <button id="undo-btn">UNDO</button>
+      <button id="redo-btn">REDO</button>
+      <button id="thesaurus-btn">THESAURUS</button>
+      <button id="dictionary-btn">DICTIONARY</button>
+      <button id="save-btn">SAVE</button>
+      <button id="load-btn">LOAD</button>
+      <button id="export-btn">EXPORT</button>
+      <button id="theme-toggle">LIGHT</button>
+      <button id="rtl-toggle">ARABIC</button>
+      <button id="feedback-btn">FEEDBACK</button>
+    </div>
+  </div>
+
+  <!-- Page Counter -->
+  <div class="page-counter" id="page-counter">Page 1</div>
+
+  <!-- Title Page -->
+  <div id="title-page" class="title-page">
+    <div class="title-page-content">
+      <div class="title">
+        <input type="text" id="script-title" placeholder="TITLE OF SCRIPT">
+      </div>
+      <div class="author">
+        <input type="text" id="written-by" placeholder="Written by">
+      </div>
+      <div class="contact">
+        <input type="text" id="contact-email" placeholder="Email">
+        <input type="text" id="contact-phone" placeholder="Phone">
+      </div>
+      <div>
+        <textarea id="awards" placeholder="Accolades/Awards" rows="3"></textarea>
+      </div>
+      <div class="copyright">
+        All copyrights reserved
+      </div>
+      <button id="back-to-editor-btn">BACK TO EDITOR</button>
+    </div>
+  </div>
+
+  <!-- Editor -->
+  <div id="editor" class="ltr" contenteditable="true" spellcheck="false"></div>
+
+  <!-- Character suggestions -->
+  <div id="character-suggestions"></div>
+  
+  <!-- Transition dropdown -->
+  <div id="transition-dropdown">
+    <div class="transition-item" data-text="CUT TO:">CUT TO:</div>
+    <div class="transition-item" data-text="FADE IN:">FADE IN:</div>
+    <div class="transition-item" data-text="FADE OUT:">FADE OUT:</div>
+    <div class="transition-item" data-text="FADE TO BLACK">FADE TO BLACK</div>
+    <div class="transition-item" data-text="DISSOLVE TO:">DISSOLVE TO:</div>
+    <div class="transition-item" data-text="SMASH CUT TO:">SMASH CUT TO:</div>
+    <div class="transition-item" data-text="MATCH CUT TO:">MATCH CUT TO:</div>
+    <div class="transition-item" data-text="INTERCUT WITH:">INTERCUT WITH:</div>
+    <div class="transition-item" data-text="BACK TO:">BACK TO:</div>
+    <div class="transition-item" data-text="THE END">THE END</div>
+  </div>
+  
+  <!-- Notification -->
+  <div id="notification">Notification Message</div>
+  
+  <!-- Feedback box -->
+  <div id="feedback-box">
+    <textarea id="feedback-text" placeholder="Enter your feedback here..."></textarea>
+    <div class="feedback-buttons">
+      <button id="cancel-feedback-btn">Cancel</button>
+      <button id="send-feedback-btn">Send Feedback</button>
+    </div>
+  </div>
+  
+  <!-- Save Modal -->
+  <div class="modal-container" id="save-modal-container">
+    <div class="modal">
+      <h2>Save Script</h2>
+      <div style="margin: 10px 0;">
+        <label for="save-script-title">Script Title:</label>
+        <input type="text" id="save-script-title" placeholder="Enter script title">
+      </div>
+      <div style="margin: 10px 0;">
+        <label for="save-location">Save Location:</label>
+        <select id="save-location" style="width: 100%; margin-top: 5px;">
+          <option value="local">Browser Storage</option>
+          <option value="download">Download File</option>
         </select>
-        <button id="add-element-btn">Add Element</button>
-        <button id="thesaurus-btn">Thesaurus</button>
-        <button id="dictionary-btn">Dictionary</button>
-        <select id="language-select">
-            <option value="en">English</option>
-            <option value="ar">العربية</option>
+      </div>
+      <div class="modal-buttons">
+        <button class="cancel-btn" id="save-cancel">Cancel</button>
+        <button class="confirm-btn" id="save-confirm">Save</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Load Modal -->
+  <div class="modal-container" id="load-modal-container">
+    <div class="modal">
+      <h2>Load Script</h2>
+      <div style="margin: 10px 0;">
+        <label for="load-location">Load From:</label>
+        <select id="load-location" style="width: 100%; margin-top: 5px;">
+          <option value="local">Browser Storage</option>
+          <option value="upload">Upload File</option>
         </select>
+      </div>
+      <div id="saved-scripts-container" style="display: block;">
+        <div id="saved-scripts-list" style="max-height: 200px; overflow-y: auto; margin: 10px 0;"></div>
+      </div>
+      <div id="upload-container" style="display: none; margin: 10px 0;">
+        <input type="file" id="script-upload" accept=".fdx,.html,.txt">
+      </div>
+      <div class="modal-buttons">
+        <button class="cancel-btn" id="load-cancel">Cancel</button>
+        <button class="confirm-btn" id="load-confirm">Load</button>
+      </div>
     </div>
-    
-    <div id="document-container">
-        <div id="screenplay-content" contenteditable="false">
-            <!-- Elements will be added here -->
-        </div>
+  </div>
+  
+  <!-- Export Modal -->
+  <div class="modal-container" id="export-modal-container">
+    <div class="modal">
+      <h2>Export Script</h2>
+      <div style="margin: 10px 0;">
+        <label for="export-format">Format:</label>
+        <select id="export-format" style="width: 100%; margin-top: 5px;">
+          <option value="pdf">PDF</option>
+          <option value="fdx">Final Draft (FDX)</option>
+          <option value="html">HTML</option>
+        </select>
+      </div>
+      <div style="margin: 10px 0;">
+        <label for="export-filename">File Name:</label>
+        <input type="text" id="export-filename" placeholder="Enter file name" style="width: 100%; margin-top: 5px;">
+      </div>
+      <div class="modal-buttons">
+        <button class="cancel-btn" id="export-cancel">Cancel</button>
+        <button class="confirm-btn" id="export-confirm">Export</button>
+      </div>
     </div>
-    
-    <!-- Thesaurus Modal -->
-    <div id="thesaurus-modal" class="modal">
-        <div class="modal-content">
-            <div class="tab-container">
-                <div class="tab active" data-tab="thesaurus">Thesaurus</div>
-                <div class="tab" data-tab="dictionary">Dictionary</div>
-            </div>
-            
-            <div id="thesaurus-tab" class="tab-content active">
-                <input type="text" id="thesaurus-search" placeholder="Search for a word..." autocomplete="off">
-                <div id="thesaurus-results"></div>
-            </div>
-            
-            <div id="dictionary-tab" class="tab-content">
-                <input type="text" id="dictionary-search" placeholder="Search for a word..." autocomplete="off">
-                <div id="dictionary-results"></div>
-            </div>
+  </div>
+  
+  <!-- Thesaurus Modal -->
+  <div class="modal-container" id="thesaurus-modal-container">
+    <div class="modal">
+      <h2>Thesaurus</h2>
+      <input type="text" id="thesaurus-search" placeholder="Search for a word...">
+      <div id="thesaurus-results" style="margin-top: 15px; max-height: 300px; overflow-y: auto;">
+        <div style="padding: 10px; text-align: center; color: #999;">
+          Thesaurus functionality would be implemented with an API in a full version
         </div>
-        <div class="modal-buttons">
-            <button id="cancel-thesaurus-btn">Cancel</button>
-        </div>
+      </div>
+      <div class="modal-buttons">
+        <button class="cancel-btn" id="thesaurus-cancel">Close</button>
+      </div>
     </div>
+  </div>
+  
+  <!-- Dictionary Modal -->
+  <div class="modal-container" id="dictionary-modal-container">
+    <div class="modal">
+      <h2>Dictionary</h2>
+      <input type="text" id="dictionary-search" placeholder="Search for a word...">
+      <div id="dictionary-results" style="margin-top: 15px; max-height: 300px; overflow-y: auto;">
+        <div style="padding: 10px; text-align: center; color: #999;">
+          Dictionary functionality would be implemented with an API in a full version
+        </div>
+      </div>
+      <div class="modal-buttons">
+        <button class="cancel-btn" id="dictionary-cancel">Close</button>
+      </div>
+    </div>
+  </div>
 
-    <script>
-        // DOM Elements
-        const screenplayContent = document.getElementById('screenplay-content');
-        const elementSelect = document.getElementById('element-select');
-        const addElementBtn = document.getElementById('add-element-btn');
-        const thesaurusBtn = document.getElementById('thesaurus-btn');
-        const dictionaryBtn = document.getElementById('dictionary-btn');
-        const thesaurusModal = document.getElementById('thesaurus-modal');
-        const cancelThesaurusBtn = document.getElementById('cancel-thesaurus-btn');
-        const thesaurusSearch = document.getElementById('thesaurus-search');
-        const dictionarySearch = document.getElementById('dictionary-search');
-        const thesaurusResults = document.getElementById('thesaurus-results');
-        const dictionaryResults = document.getElementById('dictionary-results');
-        const tabs = document.querySelectorAll('.tab');
-        const tabContents = document.querySelectorAll('.tab-content');
-        const languageSelect = document.getElementById('language-select');
-        const newBtn = document.getElementById('new-btn');
-        const openBtn = document.getElementById('open-btn');
-        const saveBtn = document.getElementById('save-btn');
-        const printBtn = document.getElementById('print-btn');
+  <script>
+    // Arabic translations
+    const arabicLabels = {
+      'SCENE HEADING': 'العنوان الرئيسي',
+      'ACTION': 'الفعل',
+      'CHARACTER': 'الشخصية',
+      'DIALOGUE': 'الحوار',
+      'PARENTHETICAL': 'توضيح',
+      'TRANSITION': 'الانتقال',
+      'TITLE PAGE': 'صفحة العنوان',
+      'THESAURUS': 'المعجم',
+      'DICTIONARY': 'القاموس',
+      'SAVE': 'حفظ',
+      'LOAD': 'تحميل',
+      'EXPORT': 'تصدير',
+      'FEEDBACK': 'تعليق',
+      'ARABIC': 'English',
+      'ENGLISH': 'عربي',
+      'LIGHT': 'مضيء',
+      'DARK': 'مظلم',
+      'BACK TO EDITOR': 'العودة إلى المحرر',
+      'UNDO': 'تراجع',
+      'REDO': 'إعادة',
+      'Format:': 'التنسيق:',
+      'File Name:': 'اسم الملف:',
+      'Script Title:': 'عنوان السيناريو:',
+      'Save Location:': 'مكان الحفظ:',
+      'Load From:': 'تحميل من:',
+      'Browser Storage': 'تخزين المتصفح',
+      'Download File': 'تنزيل الملف',
+      'Upload File': 'رفع ملف'
+    };
 
-        // Current language
-        let currentLanguage = 'en';
+    // Global state
+    let currentElement = 'scene-heading';
+    let isRtlMode = false;
+    let scriptCharacters = new Set();
+    let undoStack = [];
+    let redoStack = [];
+    let isUndoing = false;
+    let pageCount = 1;
 
-        // Add New Element
-        addElementBtn.addEventListener('click', () => {
-            addNewElement(elementSelect.value);
+    // Initialize the editor
+    document.addEventListener('DOMContentLoaded', function() {
+      // Start with blank editor
+      document.getElementById('editor').style.display = 'block';
+      updatePageCounter();
+      
+      // Set up event listeners
+      setupListeners();
+    });
+
+    function setupListeners() {
+      const editor = document.getElementById('editor');
+      const notification = document.getElementById('notification');
+      
+      // Title page button
+      document.getElementById('title-page-btn').addEventListener('click', function() {
+        document.getElementById('title-page').style.display = 'block';
+        document.getElementById('editor').style.display = 'none';
+        document.querySelectorAll('.element-button').forEach(b => b.classList.remove('active'));
+      });
+      
+      // Back to editor button
+      document.getElementById('back-to-editor-btn').addEventListener('click', function() {
+        document.getElementById('title-page').style.display = 'none';
+        document.getElementById('editor').style.display = 'block';
+        document.getElementById('scene-heading-btn').classList.add('active');
+      });
+
+      // Element type buttons
+      document.querySelectorAll('.element-button').forEach(btn => {
+        btn.addEventListener('click', function() {
+          if (document.getElementById('title-page').style.display === 'block') return;
+          
+          currentElement = this.dataset.type;
+          document.querySelectorAll('.element-button').forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          addNewElement(currentElement);
         });
-
-        function addNewElement(elementType, content = '') {
-            const element = document.createElement('div');
-            element.className = `element ${elementType}`;
-            element.contentEditable = 'true';
-            
-            // Add element menu
-            const menu = document.createElement('div');
-            menu.className = 'element-menu';
-            
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = 'Delete';
-            deleteBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                element.remove();
-            });
-            
-            menu.appendChild(deleteBtn);
-            element.appendChild(menu);
-            
-            // Set placeholder text based on element type
-            if (!content) {
-                switch(elementType) {
-                    case 'scene-heading':
-                        element.textContent = 'INT. LOCATION - DAY';
-                        break;
-                    case 'action':
-                        element.textContent = 'Action description goes here...';
-                        break;
-                    case 'character':
-                        element.textContent = 'CHARACTER NAME';
-                        break;
-                    case 'dialogue':
-                        element.textContent = 'Dialogue text goes here...';
-                        break;
-                    case 'parenthetical':
-                        element.textContent = '(parenthetical)';
-                        break;
-                    case 'transition':
-                        element.textContent = 'CUT TO:';
-                        break;
-                }
-            } else {
-                element.textContent = content;
-            }
-            
-            screenplayContent.appendChild(element);
-            element.focus();
-            
-            // Place cursor at start
-            const range = document.createRange();
-            range.selectNodeContents(element);
-            range.collapse(true);
-            const selection = window.getSelection();
-            selection.removeAllRanges();
-            selection.addRange(range);
-            
-            // Add Enter key functionality
-            element.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    const newElement = document.createElement('div');
-                    newElement.className = `element ${elementType}`;
-                    newElement.contentEditable = 'true';
-                    
-                    // Add menu to new element
-                    const newMenu = document.createElement('div');
-                    newMenu.className = 'element-menu';
-                    const newDeleteBtn = document.createElement('button');
-                    newDeleteBtn.textContent = 'Delete';
-                    newDeleteBtn.addEventListener('click', (ev) => {
-                        ev.stopPropagation();
-                        newElement.remove();
-                    });
-                    newMenu.appendChild(newDeleteBtn);
-                    newElement.appendChild(newMenu);
-                    
-                    screenplayContent.insertBefore(newElement, element.nextSibling);
-                    newElement.focus();
-                }
-            });
+      });
+      
+      // Action buttons
+      document.getElementById('save-btn').addEventListener('click', saveScript);
+      document.getElementById('load-btn').addEventListener('click', loadScript);
+      document.getElementById('export-btn').addEventListener('click', showExportModal);
+      document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+      document.getElementById('rtl-toggle').addEventListener('click', toggleDirection);
+      document.getElementById('feedback-btn').addEventListener('click', toggleFeedback);
+      document.getElementById('thesaurus-btn').addEventListener('click', showThesaurus);
+      document.getElementById('dictionary-btn').addEventListener('click', showDictionary);
+      document.getElementById('undo-btn').addEventListener('click', undo);
+      document.getElementById('redo-btn').addEventListener('click', redo);
+      document.getElementById('cancel-feedback-btn').addEventListener('click', toggleFeedback);
+      
+      // Load location toggle
+      document.getElementById('load-location').addEventListener('change', function() {
+        if (this.value === 'local') {
+          document.getElementById('saved-scripts-container').style.display = 'block';
+          document.getElementById('upload-container').style.display = 'none';
+        } else {
+          document.getElementById('saved-scripts-container').style.display = 'none';
+          document.getElementById('upload-container').style.display = 'block';
         }
-
-        // Thesaurus Button
-        thesaurusBtn.addEventListener('click', () => {
-            thesaurusModal.style.display = 'block';
-            thesaurusSearch.focus();
-        });
-
-        // Dictionary Button
-        dictionaryBtn.addEventListener('click', () => {
-            thesaurusModal.style.display = 'block';
-            // Switch to dictionary tab
-            tabs.forEach(tab => tab.classList.remove('active'));
-            tabContents.forEach(content => content.classList.remove('active'));
-            document.querySelector('.tab[data-tab="dictionary"]').classList.add('active');
-            document.getElementById('dictionary-tab').classList.add('active');
-            dictionarySearch.focus();
-        });
-
-        // Cancel Thesaurus Modal
-        cancelThesaurusBtn.addEventListener('click', () => {
-            thesaurusModal.style.display = 'none';
-            thesaurusResults.innerHTML = '';
-            dictionaryResults.innerHTML = '';
-            thesaurusSearch.value = '';
-            dictionarySearch.value = '';
-        });
-
-        // Tab Switching
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabName = tab.getAttribute('data-tab');
-                
-                tabs.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(content => content.classList.remove('active'));
-                
-                tab.classList.add('active');
-                document.getElementById(`${tabName}-tab`).classList.add('active');
-                
-                if (tabName === 'thesaurus') {
-                    thesaurusSearch.focus();
-                } else {
-                    dictionarySearch.focus();
-                }
-            });
-        });
-
-        // Search Thesaurus
-        thesaurusSearch.addEventListener('input', (e) => {
-            const word = e.target.value.trim();
-            if (word) {
-                searchThesaurus(word);
-            } else {
-                thesaurusResults.innerHTML = '';
-            }
-        });
-
-        // Search Dictionary
-        dictionarySearch.addEventListener('input', (e) => {
-            const word = e.target.value.trim();
-            if (word) {
-                searchDictionary(word);
-            } else {
-                dictionaryResults.innerHTML = '';
-            }
-        });
-
-        // Enter key functionality for search
-        thesaurusSearch.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                const word = e.target.value.trim();
-                if (word) {
-                    searchThesaurus(word);
-                }
-            }
-        });
-
-        dictionarySearch.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                const word = e.target.value.trim();
-                if (word) {
-                    searchDictionary(word);
-                }
-            }
-        });
-
-        // Search Thesaurus Function with API
-        async function searchThesaurus(word) {
-            thesaurusResults.innerHTML = '<div class="loading">Searching...</div>';
-            
-            try {
-                let apiUrl;
-                if (currentLanguage === 'en') {
-                    apiUrl = `https://api.datamuse.com/words?rel_syn=${encodeURIComponent(word)}&max=10`;
-                } else {
-                    apiUrl = `https://api.alqamoos.org/synonyms?word=${encodeURIComponent(word)}&lang=ar`;
-                }
-                
-                const response = await fetch(apiUrl);
-                const data = await response.json();
-                
-                let html;
-                if (currentLanguage === 'en') {
-                    if (data.length > 0) {
-                        const synonyms = data.map(item => item.word);
-                        html = `<div class="word-result">
-                            <h3>${word.charAt(0).toUpperCase() + word.slice(1)}</h3>
-                            <div><strong>Synonyms:</strong> ${synonyms.join(', ')}</div>
-                        </div>`;
-                    } else {
-                        html = `<div class="word-result">No thesaurus results found for "${word}"</div>`;
-                    }
-                } else {
-                    if (data.synonyms && data.synonyms.length > 0) {
-                        html = `<div class="word-result rtl-text">
-                            <h3>${word}</h3>
-                            <div><strong>مرادفات:</strong> ${data.synonyms.join('، ')}</div>
-                        </div>`;
-                    } else {
-                        html = `<div class="word-result rtl-text">لا توجد نتائج للكلمة "${word}"</div>`;
-                    }
-                }
-                
-                thesaurusResults.innerHTML = html;
-            } catch (error) {
-                console.error('Thesaurus search error:', error);
-                thesaurusResults.innerHTML = `<div class="error">Error searching thesaurus. Please try again.</div>`;
-            }
+      });
+      
+      // Modal buttons
+      document.getElementById('save-cancel').addEventListener('click', () => {
+        document.getElementById('save-modal-container').style.display = 'none';
+      });
+      
+      document.getElementById('save-confirm').addEventListener('click', () => {
+        const title = document.getElementById('save-script-title').value.trim() || 'Untitled Script';
+        const content = editor.innerHTML;
+        const saveLocation = document.getElementById('save-location').value;
+        
+        if (saveLocation === 'local') {
+          // Save to localStorage
+          const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+          scripts[title] = {
+            content,
+            characters: Array.from(scriptCharacters),
+            timestamp: Date.now(),
+            title: document.getElementById('script-title').value,
+            author: document.getElementById('written-by').value,
+            contact: {
+              email: document.getElementById('contact-email').value,
+              phone: document.getElementById('contact-phone').value
+            },
+            awards: document.getElementById('awards').value
+          };
+          localStorage.setItem('scripts', JSON.stringify(scripts));
+          
+          document.getElementById('save-modal-container').style.display = 'none';
+          showNotification(`Script "${title}" saved to browser storage`);
+        } else {
+          // Download as file
+          const blob = new Blob([content], {type: 'text/plain'});
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.txt`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          
+          document.getElementById('save-modal-container').style.display = 'none';
+          showNotification(`Script "${title}" downloaded`);
         }
-
-        // Search Dictionary Function with API
-        async function searchDictionary(word) {
-            dictionaryResults.innerHTML = '<div class="loading">Searching...</div>';
+      });
+      
+      document.getElementById('load-cancel').addEventListener('click', () => {
+        document.getElementById('load-modal-container').style.display = 'none';
+      });
+      
+      document.getElementById('load-confirm').addEventListener('click', () => {
+        const loadLocation = document.getElementById('load-location').value;
+        
+        if (loadLocation === 'local') {
+          const selected = document.querySelector('.saved-script-item.selected');
+          if (!selected) {
+            showNotification('Please select a script to load');
+            return;
+          }
+          
+          const scriptName = selected.getAttribute('data-name');
+          const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+          
+          if (scripts[scriptName]) {
+            editor.innerHTML = scripts[scriptName].content;
+            if (scripts[scriptName].characters) {
+              scriptCharacters = new Set(scripts[scriptName].characters);
+            }
             
-            try {
-                let apiUrl;
-                if (currentLanguage === 'en') {
-                    apiUrl = `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`;
-                } else {
-                    apiUrl = `https://api.alqamoos.org/definitions?word=${encodeURIComponent(word)}&lang=ar`;
-                }
-                
-                const response = await fetch(apiUrl);
-                const data = await response.json();
-                
-                let html;
-                if (currentLanguage === 'en') {
-                    if (Array.isArray(data) && data.length > 0) {
-                        const entry = data[0];
-                        html = `<div class="word-result">
-                            <h3>${word.charAt(0).toUpperCase() + word.slice(1)}</h3>`;
-                        
-                        entry.meanings.forEach(meaning => {
-                            html += `<div><em>${meaning.partOfSpeech}</em></div>`;
-                            meaning.definitions.slice(0, 3).forEach((def, i) => {
-                                html += `<div><strong>Definition ${i+1}:</strong> ${def.definition}</div>`;
-                                if (def.example) {
-                                    html += `<div><strong>Example:</strong> "${def.example}"</div>`;
-                                }
-                            });
-                        });
-                        
-                        html += `</div>`;
-                    } else {
-                        html = `<div class="word-result">No dictionary results found for "${word}"</div>`;
-                    }
-                } else {
-                    if (data.definitions && data.definitions.length > 0) {
-                        html = `<div class="word-result rtl-text">
-                            <h3>${word}</h3>`;
-                        
-                        data.definitions.slice(0, 3).forEach((def, i) => {
-                            html += `<div><strong>تعريف ${i+1}:</strong> ${def.definition}</div>`;
-                            if (def.example) {
-                                html += `<div><strong>مثال:</strong> "${def.example}"</div>`;
-                            }
-                        });
-                        
-                        html += `</div>`;
-                    } else {
-                        html = `<div class="word-result rtl-text">لا توجد نتائج للكلمة "${word}"</div>`;
-                    }
-                }
-                
-                dictionaryResults.innerHTML = html;
-            } catch (error) {
-                console.error('Dictionary search error:', error);
-                dictionaryResults.innerHTML = `<div class="error">Error searching dictionary. Please try again.</div>`;
-            }
+            // Load title page info
+            document.getElementById('script-title').value = scripts[scriptName].title || '';
+            document.getElementById('written-by').value = scripts[scriptName].author || '';
+            document.getElementById('contact-email').value = scripts[scriptName].contact?.email || '';
+            document.getElementById('contact-phone').value = scripts[scriptName].contact?.phone || '';
+            document.getElementById('awards').value = scripts[scriptName].awards || '';
+            
+            document.getElementById('load-modal-container').style.display = 'none';
+            showNotification(`Script "${scriptName}" loaded successfully`);
+            updatePageCounter();
+          }
+        } else {
+          const fileInput = document.getElementById('script-upload');
+          if (fileInput.files.length === 0) {
+            showNotification('Please select a file to upload');
+            return;
+          }
+          
+          const file = fileInput.files[0];
+          const reader = new FileReader();
+          
+          reader.onload = function(e) {
+            editor.innerHTML = e.target.result;
+            document.getElementById('load-modal-container').style.display = 'none';
+            showNotification(`Script "${file.name}" loaded successfully`);
+            updatePageCounter();
+          };
+          
+          reader.readAsText(file);
         }
-
-        // Language change
-        languageSelect.addEventListener('change', (e) => {
-            currentLanguage = e.target.value;
-            if (currentLanguage === 'ar') {
-                document.body.classList.add('rtl');
-            } else {
-                document.body.classList.remove('rtl');
+      });
+      
+      document.getElementById('export-cancel').addEventListener('click', () => {
+        document.getElementById('export-modal-container').style.display = 'none';
+      });
+      
+      document.getElementById('export-confirm').addEventListener('click', () => {
+        const format = document.getElementById('export-format').value;
+        let filename = document.getElementById('export-filename').value.trim();
+        const defaultTitle = document.getElementById('script-title').value.trim() || 'Untitled Script';
+        
+        if (!filename) {
+          filename = defaultTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        }
+        
+        exportScript(format, filename);
+      });
+      
+      document.getElementById('send-feedback-btn').addEventListener('click', () => {
+        const feedbackText = document.getElementById('feedback-text').value.trim();
+        if (!feedbackText) {
+          showNotification('Please enter your feedback');
+          return;
+        }
+        
+        const mailtoLink = `mailto:Adam.st@yahoo.com?subject=Fade%20Out%20Feedback&body=${encodeURIComponent(feedbackText)}`;
+        window.location.href = mailtoLink;
+        showNotification('Feedback sent!');
+        document.getElementById('feedback-text').value = '';
+        document.getElementById('feedback-box').style.display = 'none';
+      });
+      
+      // Thesaurus search
+      document.getElementById('thesaurus-search').addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+          searchThesaurus(this.value);
+        }
+      });
+      
+      // Dictionary search
+      document.getElementById('dictionary-search').addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+          searchDictionary(this.value);
+        }
+      });
+      
+      // Editor events
+      editor.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleEnterKey();
+        } else if (e.key === 'Tab') {
+          e.preventDefault();
+          cycleElementType();
+        } else if (e.ctrlKey && e.key === 'z') {
+          e.preventDefault();
+          undo();
+        } else if (e.ctrlKey && e.key === 'y') {
+          e.preventDefault();
+          redo();
+        }
+        
+        // Auto-scroll when reaching bottom
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          const rect = range.getBoundingClientRect();
+          
+          if (rect.bottom > window.innerHeight - 50) {
+            window.scrollBy(0, 50);
+          }
+        }
+      });
+      
+      editor.addEventListener('click', function(e) {
+        const target = e.target;
+        if (target === editor) return;
+        
+        let element = target;
+        while (element && element !== editor && !element.classList.contains('element')) {
+          element = element.parentNode;
+        }
+        
+        if (element && element !== editor) {
+          document.querySelectorAll('#editor .element').forEach(el => el.classList.remove('active-line'));
+          element.classList.add('active-line');
+          
+          const elementClasses = element.className.split(' ');
+          for (const cls of elementClasses) {
+            if (['scene-heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(cls)) {
+              currentElement = cls;
+              break;
             }
-        });
+          }
+          
+          updateActiveButton();
+        }
+      });
 
-        // New document
-        newBtn.addEventListener('click', () => {
-            if (confirm('Are you sure you want to create a new document? Any unsaved changes will be lost.')) {
-                screenplayContent.innerHTML = '';
-                addNewElement('action');
-            }
+      editor.addEventListener('input', function(e) {
+        const activeElement = document.querySelector('.active-line');
+        if (!activeElement) return;
+        
+        const type = activeElement.classList.contains('character') ? 'character' :
+                    activeElement.classList.contains('scene-heading') ? 'scene-heading' :
+                    activeElement.classList.contains('transition') ? 'transition' : null;
+        
+        if (type === 'scene-heading' || type === 'character' || type === 'transition') {
+          const selection = window.getSelection();
+          if (!selection || selection.rangeCount === 0) return;
+          
+          const range = selection.getRangeAt(0);
+          const cursorPosition = range.startOffset;
+          const originalText = activeElement.textContent || '';
+          activeElement.textContent = originalText.toUpperCase();
+          
+          const newRange = document.createRange();
+          if (activeElement.firstChild) {
+            newRange.setStart(activeElement.firstChild, Math.min(cursorPosition, activeElement.textContent.length));
+          } else {
+            newRange.setStart(activeElement, 0);
+          }
+          newRange.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(newRange);
+        }
+        
+        if (type === 'character') {
+          const text = activeElement.textContent?.trim().toUpperCase() || '';
+          if (text.length > 0) {
+            showCharacterSuggestions(text, activeElement);
+          } else {
+            hideCharacterSuggestions();
+          }
+        }
+        
+        updatePageCounter();
+        saveState();
+      });
+      
+      // Transition dropdown items
+      document.querySelectorAll('.transition-item').forEach(item => {
+        item.addEventListener('click', function() {
+          const activeElement = document.querySelector('.active-line');
+          if (activeElement && activeElement.classList.contains('transition')) {
+            activeElement.textContent = this.dataset.text;
+            hideTransitionDropdown();
+            setCaretToEnd(activeElement);
+            saveState();
+          }
         });
+      });
+      
+      // Close dropdowns when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('#character-suggestions') && !e.target.closest('.character')) {
+          hideCharacterSuggestions();
+        }
+        
+        if (!e.target.closest('#transition-dropdown') && !e.target.closest('.transition')) {
+          hideTransitionDropdown();
+        }
+      });
+    }
 
-        // Save document
-        saveBtn.addEventListener('click', () => {
-            const elements = Array.from(screenplayContent.querySelectorAll('.element'));
-            const documentData = elements.map(el => {
-                return {
-                    type: Array.from(el.classList).find(c => c !== 'element'),
-                    content: el.textContent.replace('Delete', '').trim()
-                };
+    // Add a new screenplay element
+    function addNewElement(type, text = '') {
+      const editor = document.getElementById('editor');
+      const div = document.createElement('div');
+      div.className = `element ${type}`;
+      div.id = `element-${Date.now()}`;
+      
+      if (isRtlMode) {
+        div.classList.add('rtl-element');
+        
+        if (type === 'transition') {
+          div.style.textAlign = 'left';
+          div.style.paddingLeft = '1.5in';
+          div.style.paddingRight = '0';
+        } else if (type === 'scene-heading' || type === 'action') {
+          div.style.textAlign = 'right';
+        }
+      } else {
+        if (type === 'transition') {
+          div.style.textAlign = 'right';
+          div.style.paddingRight = '1.5in';
+          div.style.paddingLeft = '0';
+        }
+      }
+      
+      if (type === 'scene-heading' && !text) {
+        div.textContent = isRtlMode ? '.INT ' : 'INT. ';
+      } else if (type === 'parenthetical' && !text) {
+        div.textContent = '()';
+      } else if (text) {
+        div.textContent = text;
+      } else {
+        div.innerHTML = '&nbsp;';
+      }
+      
+      const activeElement = document.querySelector('.active-line');
+      if (activeElement) {
+        activeElement.classList.remove('active-line');
+        activeElement.after(div);
+      } else {
+        editor.appendChild(div);
+      }
+      
+      div.classList.add('active-line');
+      setCaretToEnd(div);
+      
+      if (type === 'character') {
+        div.addEventListener('input', function() {
+          const text = this.textContent?.trim().toUpperCase() || '';
+          if (text.length > 0) {
+            showCharacterSuggestions(text, this);
+          } else {
+            hideCharacterSuggestions();
+          }
+        });
+      }
+      
+      if (type === 'transition') {
+        div.addEventListener('click', function(e) {
+          showTransitionDropdown(this);
+        });
+      }
+      
+      updatePageCounter();
+      saveState();
+    }
+
+    // Handle Enter key presses
+    function handleEnterKey() {
+      const activeElement = document.querySelector('.active-line');
+      if (!activeElement) return;
+      
+      let type = null;
+      const classes = activeElement.className.split(' ');
+      for (const cls of classes) {
+        if (['scene-heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(cls)) {
+          type = cls;
+          break;
+        }
+      }
+      
+      if (!type) return;
+      
+      let nextType = 'action';
+      
+      if (type === 'scene-heading') nextType = 'action';
+      else if (type === 'action') nextType = 'action';
+      else if (type === 'character') {
+        const text = activeElement.textContent.trim();
+        if (text) {
+          nextType = 'dialogue';
+          scriptCharacters.add(text);
+        } else {
+          nextType = 'character';
+        }
+      }
+      else if (type === 'dialogue') nextType = 'character';
+      else if (type === 'parenthetical') nextType = 'dialogue';
+      else if (type === 'transition') nextType = 'scene-heading';
+      
+      addNewElement(nextType);
+      currentElement = nextType;
+      updateActiveButton();
+      
+      // Auto-scroll to keep the new line visible
+      const newActiveElement = document.querySelector('.active-line');
+      if (newActiveElement) {
+        newActiveElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    // Cycle through element types with Tab key
+    function cycleElementType() {
+      const activeElement = document.querySelector('.active-line');
+      if (!activeElement) return;
+      
+      let type = null;
+      const classes = activeElement.className.split(' ');
+      for (const cls of classes) {
+        if (['scene-heading', 'action', 'character', 'dialogue', 'parenthetical', 'transition'].includes(cls)) {
+          type = cls;
+          break;
+        }
+      }
+      
+      if (!type) return;
+      
+      let nextType = 'action';
+      
+      if (type === 'scene-heading') nextType = 'action';
+      else if (type === 'action') nextType = 'character';
+      else if (type === 'character') nextType = 'parenthetical';
+      else if (type === 'parenthetical') nextType = 'dialogue';
+      else if (type === 'dialogue') nextType = 'character';
+      else if (type === 'transition') nextType = 'scene-heading';
+      
+      activeElement.classList.remove(type);
+      activeElement.classList.add(nextType);
+      
+      if (isRtlMode) {
+        activeElement.classList.add('rtl-element');
+        if (nextType === 'transition') {
+          activeElement.style.textAlign = 'left';
+          activeElement.style.paddingLeft = '1.5in';
+          activeElement.style.paddingRight = '0';
+        } else if (nextType === 'scene-heading' || nextType === 'action') {
+          activeElement.style.textAlign = 'right';
+        } else {
+          activeElement.style.textAlign = '';
+        }
+      } else {
+        activeElement.classList.remove('rtl-element');
+        if (nextType === 'transition') {
+          activeElement.style.textAlign = 'right';
+          activeElement.style.paddingRight = '1.5in';
+          activeElement.style.paddingLeft = '0';
+        } else {
+          activeElement.style.textAlign = '';
+        }
+      }
+      
+      if (nextType === 'scene-heading' && (activeElement.textContent.trim() === '' || activeElement.textContent === '\u00A0')) {
+        activeElement.textContent = isRtlMode ? '.INT ' : 'INT. ';
+      } else if (nextType === 'parenthetical' && (activeElement.textContent.trim() === '' || activeElement.textContent === '\u00A0')) {
+        activeElement.textContent = '()';
+      }
+      
+      currentElement = nextType;
+      updateActiveButton();
+      saveState();
+    }
+
+    // Update active button in toolbar
+    function updateActiveButton() {
+      document.querySelectorAll('.element-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      const activeButton = document.querySelector(`.element-button[data-type="${currentElement}"]`);
+      if (activeButton) {
+        activeButton.classList.add('active');
+      }
+    }
+
+    // Place cursor at the end of an element
+    function setCaretToEnd(el) {
+      if (!el) return;
+      
+      el.focus();
+      const range = document.createRange();
+      if (el.firstChild) {
+        range.setStart(el.firstChild, el.firstChild.textContent.length);
+      } else {
+        range.setStart(el, 0);
+      }
+      range.collapse(true);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+
+    // Show character suggestions dropdown
+    function showCharacterSuggestions(text, element) {
+      if (!text) return;
+      
+      const characterSuggestions = document.getElementById('character-suggestions');
+      if (!characterSuggestions) return;
+      
+      const matches = Array.from(scriptCharacters).filter(char => 
+        char.includes(text) && char !== text
+      );
+      
+      if (matches.length > 0) {
+        characterSuggestions.innerHTML = '';
+        const rect = element.getBoundingClientRect();
+        characterSuggestions.style.top = `${rect.bottom + window.scrollY}px`;
+        characterSuggestions.style.left = `${rect.left + window.scrollX}px`;
+        characterSuggestions.style.display = 'block';
+        
+        matches.forEach(char => {
+          const item = document.createElement('div');
+          item.className = 'character-suggestion-item';
+          item.textContent = char;
+          item.addEventListener('click', () => {
+            element.textContent = char;
+            hideCharacterSuggestions();
+            addNewElement('dialogue');
+          });
+          characterSuggestions.appendChild(item);
+        });
+      } else {
+        hideCharacterSuggestions();
+      }
+    }
+
+    // Hide character suggestions
+    function hideCharacterSuggestions() {
+      const characterSuggestions = document.getElementById('character-suggestions');
+      if (characterSuggestions) {
+        characterSuggestions.style.display = 'none';
+      }
+    }
+
+    // Show transition dropdown
+    function showTransitionDropdown(element) {
+      const dropdown = document.getElementById('transition-dropdown');
+      if (!dropdown) return;
+      
+      const rect = element.getBoundingClientRect();
+      dropdown.style.top = `${rect.bottom + window.scrollY}px`;
+      dropdown.style.left = `${rect.left + window.scrollX}px`;
+      dropdown.style.display = 'block';
+      
+      setTimeout(() => {
+        document.addEventListener('click', hideTransitionDropdownOnClickOutside);
+      }, 10);
+    }
+
+    // Hide transition dropdown
+    function hideTransitionDropdown() {
+      const dropdown = document.getElementById('transition-dropdown');
+      if (dropdown) {
+        dropdown.style.display = 'none';
+      }
+      document.removeEventListener('click', hideTransitionDropdownOnClickOutside);
+    }
+
+    // Hide dropdown when clicking outside
+    function hideTransitionDropdownOnClickOutside(e) {
+      const dropdown = document.getElementById('transition-dropdown');
+      if (!dropdown.contains(e.target)) {
+        hideTransitionDropdown();
+      }
+    }
+
+    // Save script
+    function saveScript() {
+      const saveModal = document.getElementById('save-modal-container');
+      if (saveModal) {
+        saveModal.style.display = 'flex';
+        document.getElementById('save-script-title').value = document.getElementById('script-title').value || 'Untitled Script';
+        document.getElementById('save-script-title').focus();
+        
+        // Populate saved scripts list
+        const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+        const scriptsList = Object.keys(scripts).sort((a, b) => scripts[b].timestamp - scripts[a].timestamp);
+        
+        if (scriptsList.length > 0) {
+          document.getElementById('save-location').value = 'local';
+        }
+      }
+    }
+
+    // Load script
+    function loadScript() {
+      const loadModal = document.getElementById('load-modal-container');
+      const scriptsList = document.getElementById('saved-scripts-list');
+      
+      if (loadModal && scriptsList) {
+        scriptsList.innerHTML = '';
+        const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+        
+        if (Object.keys(scripts).length === 0) {
+          document.getElementById('load-location').value = 'upload';
+          document.getElementById('saved-scripts-container').style.display = 'none';
+          document.getElementById('upload-container').style.display = 'block';
+        } else {
+          const sortedScripts = Object.entries(scripts).sort((a, b) => b[1].timestamp - a[1].timestamp);
+          
+          sortedScripts.forEach(([name, data]) => {
+            const item = document.createElement('div');
+            item.className = 'saved-script-item';
+            item.setAttribute('data-name', name);
+            
+            const nameElement = document.createElement('strong');
+            nameElement.textContent = name;
+            
+            const dateElement = document.createElement('small');
+            dateElement.textContent = new Date(data.timestamp).toLocaleString();
+            
+            item.appendChild(nameElement);
+            item.appendChild(document.createElement('br'));
+            item.appendChild(dateElement);
+            item.style.padding = '8px';
+            item.style.margin = '5px 0';
+            item.style.cursor = 'pointer';
+            item.style.borderBottom = '1px solid rgba(255, 255, 255, 0.1)';
+            
+            item.addEventListener('click', function() {
+              document.querySelectorAll('.saved-script-item').forEach(el => {
+                el.classList.remove('selected');
+                el.style.backgroundColor = '';
+              });
+              this.classList.add('selected');
+              this.style.backgroundColor = 'rgba(255, 215, 0, 0.2)';
             });
             
-            const blob = new Blob([JSON.stringify(documentData, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'screenplay.json';
-            a.click();
-            URL.revokeObjectURL(url);
-        });
+            scriptsList.appendChild(item);
+          });
+          
+          document.getElementById('load-location').value = 'local';
+          document.getElementById('saved-scripts-container').style.display = 'block';
+          document.getElementById('upload-container').style.display = 'none';
+        }
+        
+        loadModal.style.display = 'flex';
+      }
+    }
 
-        // Open document
-        openBtn.addEventListener('click', () => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json';
-            
-            input.onchange = e => {
-                const file = e.target.files[0];
-                const reader = new FileReader();
-                
-                reader.onload = event => {
-                    try {
-                        const data = JSON.parse(event.target.result);
-                        screenplayContent.innerHTML = '';
-                        
-                        data.forEach(item => {
-                            addNewElement(item.type, item.content);
-                        });
-                    } catch (error) {
-                        alert('Error loading file: ' + error.message);
-                    }
-                };
-                
-                reader.readAsText(file);
-            };
-            
-            input.click();
-        });
+    // Show export modal
+    function showExportModal() {
+      const exportModal = document.getElementById('export-modal-container');
+      if (exportModal) {
+        const defaultTitle = document.getElementById('script-title').value.trim() || 'Untitled Script';
+        document.getElementById('export-filename').value = defaultTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        exportModal.style.display = 'flex';
+      }
+    }
 
-        // Print document
-        printBtn.addEventListener('click', () => {
-            window.print();
-        });
+    // Export script
+    function exportScript(format, filename) {
+      const title = document.getElementById('script-title').value.trim() || 'Untitled Script';
+      const content = document.getElementById('editor').innerHTML;
+      
+      document.getElementById('export-modal-container').style.display = 'none';
+      
+      if (format === 'html') {
+        const exportHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title><style>body{font-family:Courier,monospace;line-height:1.5;margin:40px}.scene-heading{text-transform:uppercase;font-weight:bold;margin-top:2em;padding-left:1.5in;padding-right:1.5in}.action{margin:1em 0;padding-left:1.5in;padding-right:1.5in}.character{text-transform:uppercase;margin:1.5em 0 0 0;padding-left:3.5in;padding-right:3.5in;font-weight:bold}.dialogue{margin:0.5em 0 1.5em 0;padding-left:2.5in;padding-right:2.5in}.parenthetical{font-style:italic;margin:0.5em 0;padding-left:3in;padding-right:3in}.transition{text-align:right;margin:1.5em 0;padding-right:1.5in;font-weight:bold;text-transform:uppercase}</style></head><body><h1>${title}</h1><div id="screenplay">${content}</div></body></html>`;
+        
+        const blob = new Blob([exportHtml], {type: 'text/html'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${filename}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else {
+        // For PDF and FDX, we would use a library in a real implementation
+        showNotification(`${format.toUpperCase()} export would be implemented with a library in a full version`);
+        return;
+      }
+      
+      showNotification(`Script exported as ${format.toUpperCase()} successfully!`);
+    }
 
-        // Initialize with one action element
-        window.addEventListener('DOMContentLoaded', () => {
-            addNewElement('action');
-            
-            // Adjust document container margin to account for toolbar
-            document.getElementById('document-container').style.marginTop = '56px';
+    // Show thesaurus modal
+    function showThesaurus() {
+      document.getElementById('thesaurus-modal-container').style.display = 'flex';
+      document.getElementById('thesaurus-search').focus();
+    }
+
+    // Search thesaurus
+    function searchThesaurus(word) {
+      const resultsDiv = document.getElementById('thesaurus-results');
+      resultsDiv.innerHTML = '<div style="padding: 10px; text-align: center;">Thesaurus functionality would be implemented with an API in a full version</div>';
+    }
+
+    // Show dictionary modal
+    function showDictionary() {
+      document.getElementById('dictionary-modal-container').style.display = 'flex';
+      document.getElementById('dictionary-search').focus();
+    }
+
+    // Search dictionary
+    function searchDictionary(word) {
+      const resultsDiv = document.getElementById('dictionary-results');
+      resultsDiv.innerHTML = '<div style="padding: 10px; text-align: center;">Dictionary functionality would be implemented with an API in a full version</div>';
+    }
+
+    // Toggle theme
+    function toggleTheme() {
+      document.body.classList.toggle('light');
+      const themeToggle = document.getElementById('theme-toggle');
+      themeToggle.textContent = document.body.classList.contains('light') ? 
+        (isRtlMode ? arabicLabels['DARK'] : 'DARK') : 
+        (isRtlMode ? arabicLabels['LIGHT'] : 'LIGHT');
+    }
+
+    // Toggle direction (RTL for Arabic)
+    function toggleDirection() {
+      const dirToggle = document.getElementById('rtl-toggle');
+      const elements = document.querySelectorAll('#editor .element');
+      
+      isRtlMode = !isRtlMode;
+      
+      if (isRtlMode) {
+        document.body.setAttribute('dir', 'rtl');
+        dirToggle.textContent = arabicLabels['ARABIC'];
+        
+        elements.forEach(el => {
+          el.classList.add('rtl-element');
+          if (el.classList.contains('transition')) {
+            el.style.textAlign = 'left';
+            el.style.paddingLeft = '1.5in';
+            el.style.paddingRight = '0';
+          } else if (el.classList.contains('scene-heading') || el.classList.contains('action')) {
+            el.style.textAlign = 'right';
+          }
         });
-    </script>
+        
+        updateToolbarLabels(true);
+      } else {
+        document.body.removeAttribute('dir');
+        dirToggle.textContent = 'ARABIC';
+        
+        elements.forEach(el => {
+          el.classList.remove('rtl-element');
+          if (el.classList.contains('transition')) {
+            el.style.textAlign = 'right';
+            el.style.paddingRight = '1.5in';
+            el.style.paddingLeft = '0';
+          } else {
+            el.style.textAlign = '';
+          }
+        });
+        
+        updateToolbarLabels(false);
+      }
+      
+      // Update cursor position
+      const activeElement = document.querySelector('.active-line');
+      if (activeElement) {
+        setCaretToEnd(activeElement);
+      }
+    }
+
+    // Update toolbar labels based on language
+    function updateToolbarLabels(useArabic) {
+      document.querySelectorAll('.element-button').forEach(btn => {
+        const type = btn.dataset.type;
+        btn.textContent = useArabic ? arabicLabels[type.replace('-', ' ').toUpperCase()] : type.replace('-', ' ').toUpperCase();
+      });
+      
+      document.getElementById('title-page-btn').textContent = useArabic ? arabicLabels['TITLE PAGE'] : 'TITLE PAGE';
+      document.getElementById('save-btn').textContent = useArabic ? arabicLabels['SAVE'] : 'SAVE';
+      document.getElementById('load-btn').textContent = useArabic ? arabicLabels['LOAD'] : 'LOAD';
+      document.getElementById('export-btn').textContent = useArabic ? arabicLabels['EXPORT'] : 'EXPORT';
+      document.getElementById('feedback-btn').textContent = useArabic ? arabicLabels['FEEDBACK'] : 'FEEDBACK';
+      document.getElementById('undo-btn').textContent = useArabic ? arabicLabels['UNDO'] : 'UNDO';
+      document.getElementById('redo-btn').textContent = useArabic ? arabicLabels['REDO'] : 'REDO';
+      document.getElementById('thesaurus-btn').textContent = useArabic ? arabicLabels['THESAURUS'] : 'THESAURUS';
+      document.getElementById('dictionary-btn').textContent = useArabic ? arabicLabels['DICTIONARY'] : 'DICTIONARY';
+      document.getElementById('back-to-editor-btn').textContent = useArabic ? arabicLabels['BACK TO EDITOR'] : 'BACK TO EDITOR';
+      
+      const themeToggle = document.getElementById('theme-toggle');
+      themeToggle.textContent = document.body.classList.contains('light') ? 
+        (useArabic ? arabicLabels['DARK'] : 'DARK') : 
+        (useArabic ? arabicLabels['LIGHT'] : 'LIGHT');
+    }
+
+    // Toggle feedback box
+    function toggleFeedback() {
+      const feedbackBox = document.getElementById('feedback-box');
+      feedbackBox.style.display = feedbackBox.style.display === 'none' || !feedbackBox.style.display ? 'block' : 'none';
+      if (feedbackBox.style.display === 'block') {
+        document.getElementById('feedback-text').focus();
+      }
+    }
+
+    // Show notification
+    function showNotification(message) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.style.display = 'block';
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 2000);
+    }
+
+    // Update page counter
+    function updatePageCounter() {
+      // Simple page count estimation based on content height
+      const editor = document.getElementById('editor');
+      const lineHeight = 20; // Approximate line height in pixels
+      const pageHeight = 900; // Approximate page height in pixels
+      
+      const contentHeight = editor.scrollHeight;
+      const newPageCount = Math.max(1, Math.ceil(contentHeight / pageHeight));
+      
+      if (newPageCount !== pageCount) {
+        pageCount = newPageCount;
+        document.getElementById('page-counter').textContent = `Page ${pageCount}`;
+      }
+    }
+
+    // Undo/redo functionality
+    function saveState() {
+      if (!isUndoing) {
+        undoStack.push(document.getElementById('editor').innerHTML);
+        if (undoStack.length > 50) undoStack.shift();
+        redoStack = [];
+      }
+    }
+
+    function undo() {
+      const editor = document.getElementById('editor');
+      if (undoStack.length > 0) {
+        isUndoing = true;
+        redoStack.push(editor.innerHTML);
+        editor.innerHTML = undoStack.pop();
+        isUndoing = false;
+        updatePageCounter();
+      }
+    }
+
+    function redo() {
+      const editor = document.getElementById('editor');
+      if (redoStack.length > 0) {
+        isUndoing = true;
+        undoStack.push(editor.innerHTML);
+        editor.innerHTML = redoStack.pop();
+        isUndoing = false;
+        updatePageCounter();
+      }
+    }
+  </script>
 </body>
 </html>
+
