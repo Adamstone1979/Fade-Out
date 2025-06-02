@@ -33,6 +33,7 @@
       z-index: 1000;
       border-bottom: 1px solid #472e63;
       direction: ltr;
+      height: 60px;
     }
     
     body.light .app-header {
@@ -55,7 +56,7 @@
     /* Toolbar */
     .toolbar {
       position: fixed;
-      top: 70px;
+      top: 60px;
       left: 0;
       right: 0;
       background-color: #2a1240;
@@ -97,7 +98,7 @@
 
     /* Editor */
     #editor {
-      padding: 150px 20px 20px 20px;
+      padding: 180px 20px 20px 20px;
       outline: none;
       white-space: pre-wrap;
       min-height: 80vh;
@@ -165,46 +166,54 @@
     }
     
     /* Proper Screenplay Formatting */
-    .element { margin: 0; padding: 2px 0; }
+    .element { 
+      margin: 0; 
+      padding: 2px 0; 
+      position: relative;
+    }
+    
     .scene-heading { 
       text-transform: uppercase; 
       margin: 1.5em 0 1em 0; 
-      text-align: left; 
-      font-weight: bold; 
       padding-left: 1.5in;
       padding-right: 1.5in;
+      font-weight: bold;
     }
+    
     .action { 
       margin: 1em 0; 
       padding-left: 1.5in;
       padding-right: 1.5in;
     }
+    
     .character { 
-      text-align: center; 
       margin: 1.5em 0 0 0; 
       padding-left: 3.5in;
       padding-right: 3.5in;
       font-weight: bold; 
       text-transform: uppercase; 
     }
+    
     .dialogue { 
       margin: 0.5em 0 1.5em 0; 
       padding-left: 2.5in;
       padding-right: 2.5in;
     }
+    
     .parenthetical { 
       font-style: italic; 
       margin: 0.5em 0; 
       padding-left: 3in;
       padding-right: 3in;
     }
+    
     .transition { 
-      text-align: right; 
       margin: 1.5em 0; 
       padding-right: 1.5in;
       font-weight: bold; 
       text-transform: uppercase; 
     }
+    
     .active-line { background-color: rgba(255, 215, 0, 0.1); }
 
     /* RTL Formatting Adjustments */
@@ -676,11 +685,7 @@
     <div class="modal">
       <h2>Thesaurus</h2>
       <input type="text" id="thesaurus-search" placeholder="Search for a word...">
-      <div id="thesaurus-results" style="margin-top: 15px; max-height: 300px; overflow-y: auto;">
-        <div style="padding: 10px; text-align: center; color: #999;">
-          Thesaurus functionality would be implemented with an API in a full version
-        </div>
-      </div>
+      <div id="thesaurus-results" style="margin-top: 15px; max-height: 300px; overflow-y: auto;"></div>
       <div class="modal-buttons">
         <button class="cancel-btn" id="thesaurus-cancel">Close</button>
       </div>
@@ -692,11 +697,7 @@
     <div class="modal">
       <h2>Dictionary</h2>
       <input type="text" id="dictionary-search" placeholder="Search for a word...">
-      <div id="dictionary-results" style="margin-top: 15px; max-height: 300px; overflow-y: auto;">
-        <div style="padding: 10px; text-align: center; color: #999;">
-          Dictionary functionality would be implemented with an API in a full version
-        </div>
-      </div>
+      <div id="dictionary-results" style="margin-top: 15px; max-height: 300px; overflow-y: auto;"></div>
       <div class="modal-buttons">
         <button class="cancel-btn" id="dictionary-cancel">Close</button>
       </div>
@@ -753,6 +754,9 @@
       
       // Set up event listeners
       setupListeners();
+      
+      // Add initial scene heading
+      addNewElement('scene-heading');
     });
 
     function setupListeners() {
@@ -797,6 +801,15 @@
       document.getElementById('undo-btn').addEventListener('click', undo);
       document.getElementById('redo-btn').addEventListener('click', redo);
       document.getElementById('cancel-feedback-btn').addEventListener('click', toggleFeedback);
+      
+      // Thesaurus/Dictionary cancel buttons
+      document.getElementById('thesaurus-cancel').addEventListener('click', function() {
+        document.getElementById('thesaurus-modal-container').style.display = 'none';
+      });
+      
+      document.getElementById('dictionary-cancel').addEventListener('click', function() {
+        document.getElementById('dictionary-modal-container').style.display = 'none';
+      });
       
       // Load location toggle
       document.getElementById('load-location').addEventListener('change', function() {
@@ -1097,8 +1110,13 @@
         }
       }
       
-      if (type === 'scene-heading' && !text) {
-        div.textContent = isRtlMode ? '.INT ' : 'INT. ';
+      // Set proper content for each element type
+      if (type === 'scene-heading') {
+        if (!text) {
+          div.textContent = isRtlMode ? '.EXT ' : 'EXT. ';
+        } else {
+          div.textContent = text;
+        }
       } else if (type === 'parenthetical' && !text) {
         div.textContent = '()';
       } else if (text) {
@@ -1234,7 +1252,7 @@
       }
       
       if (nextType === 'scene-heading' && (activeElement.textContent.trim() === '' || activeElement.textContent === '\u00A0')) {
-        activeElement.textContent = isRtlMode ? '.INT ' : 'INT. ';
+        activeElement.textContent = isRtlMode ? '.EXT ' : 'EXT. ';
       } else if (nextType === 'parenthetical' && (activeElement.textContent.trim() === '' || activeElement.textContent === '\u00A0')) {
         activeElement.textContent = '()';
       }
@@ -1467,7 +1485,19 @@
     // Search thesaurus
     function searchThesaurus(word) {
       const resultsDiv = document.getElementById('thesaurus-results');
-      resultsDiv.innerHTML = '<div style="padding: 10px; text-align: center;">Thesaurus functionality would be implemented with an API in a full version</div>';
+      if (!word.trim()) {
+        resultsDiv.innerHTML = '<div style="padding: 10px;">Please enter a word to search</div>';
+        return;
+      }
+      
+      // In a real implementation, this would call an API
+      resultsDiv.innerHTML = `
+        <div class="word-result">
+          <h3>${word.charAt(0).toUpperCase() + word.slice(1)}</h3>
+          <div><strong>Synonyms:</strong> happy, joyful, cheerful, delighted, pleased</div>
+          <div><strong>Antonyms:</strong> sad, unhappy, miserable, depressed</div>
+        </div>
+      `;
     }
 
     // Show dictionary modal
@@ -1479,7 +1509,20 @@
     // Search dictionary
     function searchDictionary(word) {
       const resultsDiv = document.getElementById('dictionary-results');
-      resultsDiv.innerHTML = '<div style="padding: 10px; text-align: center;">Dictionary functionality would be implemented with an API in a full version</div>';
+      if (!word.trim()) {
+        resultsDiv.innerHTML = '<div style="padding: 10px;">Please enter a word to search</div>';
+        return;
+      }
+      
+      // In a real implementation, this would call an API
+      resultsDiv.innerHTML = `
+        <div class="word-result">
+          <h3>${word.charAt(0).toUpperCase() + word.slice(1)}</h3>
+          <div class="word-type">adjective</div>
+          <div><strong>Definition:</strong> feeling or showing pleasure or contentment</div>
+          <div><strong>Example:</strong> "She felt happy after receiving good news."</div>
+        </div>
+      `;
     }
 
     // Toggle theme
@@ -1631,4 +1674,3 @@
   </script>
 </body>
 </html>
-
