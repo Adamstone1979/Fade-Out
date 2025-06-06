@@ -33,7 +33,7 @@
       z-index: 1000;
       border-bottom: 1px solid #472e63;
       direction: ltr;
-      height: 60px;
+      height: 50px;
     }
     
     body.light .app-header {
@@ -56,7 +56,7 @@
     /* Toolbar */
     .toolbar {
       position: fixed;
-      top: 60px;
+      top: 50px;
       left: 0;
       right: 0;
       background-color: #2a1240;
@@ -85,7 +85,7 @@
     .page-counter {
       position: fixed;
       right: 20px;
-      top: 130px;
+      top: 120px;
       background-color: #2a1240;
       padding: 5px 10px;
       border-radius: 3px;
@@ -98,7 +98,7 @@
 
     /* Editor */
     #editor {
-      padding: 180px 20px 20px 20px;
+      padding: 160px 20px 20px 20px;
       outline: none;
       white-space: pre-wrap;
       min-height: 80vh;
@@ -175,41 +175,41 @@
     .scene-heading { 
       text-transform: uppercase; 
       margin: 1.5em 0 1em 0; 
-      padding-left: 1.5in;
-      padding-right: 1.5in;
+      padding-left: 1.6in;
+      padding-right: 1.6in;
       font-weight: bold;
     }
     
     .action { 
       margin: 1em 0; 
-      padding-left: 1.5in;
-      padding-right: 1.5in;
+      padding-left: 1.6in;
+      padding-right: 1.6in;
     }
     
     .character { 
       margin: 1.5em 0 0 0; 
-      padding-left: 3.5in;
-      padding-right: 3.5in;
+      padding-left: 3.6in;
+      padding-right: 3.6in;
       font-weight: bold; 
       text-transform: uppercase; 
     }
     
     .dialogue { 
       margin: 0.5em 0 1.5em 0; 
-      padding-left: 2.5in;
-      padding-right: 2.5in;
+      padding-left: 2.6in;
+      padding-right: 2.6in;
     }
     
     .parenthetical { 
       font-style: italic; 
       margin: 0.5em 0; 
-      padding-left: 3in;
-      padding-right: 3in;
+      padding-left: 3.1in;
+      padding-right: 3.1in;
     }
     
     .transition { 
       margin: 1.5em 0; 
-      padding-right: 1.5in;
+      padding-right: 1.6in;
       font-weight: bold; 
       text-transform: uppercase; 
     }
@@ -225,7 +225,7 @@
     body[dir="rtl"] .transition {
       text-align: left;
       padding-right: 0;
-      padding-left: 1.5in;
+      padding-left: 1.6in;
     }
 
     /* Toolbar buttons */
@@ -481,6 +481,9 @@
     /* Thesaurus/Dictionary Results */
     .word-result {
       margin-bottom: 15px;
+      padding: 10px;
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 3px;
     }
     
     .word-type {
@@ -624,6 +627,14 @@
         <select id="save-location" style="width: 100%; margin-top: 5px;">
           <option value="local">Browser Storage</option>
           <option value="download">Download File</option>
+        </select>
+      </div>
+      <div style="margin: 10px 0;">
+        <label for="save-format">Format:</label>
+        <select id="save-format" style="width: 100%; margin-top: 5px;">
+          <option value="pdf">PDF</option>
+          <option value="fdx">Final Draft (FDX)</option>
+          <option value="html">HTML</option>
         </select>
       </div>
       <div class="modal-buttons">
@@ -831,6 +842,7 @@
         const title = document.getElementById('save-script-title').value.trim() || 'Untitled Script';
         const content = editor.innerHTML;
         const saveLocation = document.getElementById('save-location').value;
+        const format = document.getElementById('save-format').value;
         
         if (saveLocation === 'local') {
           // Save to localStorage
@@ -845,25 +857,36 @@
               email: document.getElementById('contact-email').value,
               phone: document.getElementById('contact-phone').value
             },
-            awards: document.getElementById('awards').value
+            awards: document.getElementById('awards').value,
+            format
           };
           localStorage.setItem('scripts', JSON.stringify(scripts));
           
           document.getElementById('save-modal-container').style.display = 'none';
-          showNotification(`Script "${title}" saved to browser storage`);
+          showNotification(`Script "${title}" saved to browser storage as ${format.toUpperCase()}`);
         } else {
           // Download as file
-          const blob = new Blob([content], {type: 'text/plain'});
+          let blob, extension;
+          if (format === 'html') {
+            const exportHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title><style>body{font-family:Courier,monospace;line-height:1.5;margin:40px}.scene-heading{text-transform:uppercase;font-weight:bold;margin-top:2em;padding-left:1.6in;padding-right:1.6in}.action{margin:1em 0;padding-left:1.6in;padding-right:1.6in}.character{text-transform:uppercase;margin:1.5em 0 0 0;padding-left:3.6in;padding-right:3.6in;font-weight:bold}.dialogue{margin:0.5em 0 1.5em 0;padding-left:2.6in;padding-right:2.6in}.parenthetical{font-style:italic;margin:0.5em 0;padding-left:3.1in;padding-right:3.1in}.transition{text-align:right;margin:1.5em 0;padding-right:1.6in;font-weight:bold;text-transform:uppercase}</style></head><body><h1>${title}</h1><div id="screenplay">${content}</div></body></html>`;
+            blob = new Blob([exportHtml], {type: 'text/html'});
+            extension = 'html';
+          } else {
+            // For PDF and FDX, we would use a library in a real implementation
+            blob = new Blob([content], {type: 'text/plain'});
+            extension = format === 'fdx' ? 'fdx' : 'txt';
+          }
+          
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.txt`;
+          a.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${extension}`;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
           
           document.getElementById('save-modal-container').style.display = 'none';
-          showNotification(`Script "${title}" downloaded`);
+          showNotification(`Script "${title}" downloaded as ${format.toUpperCase()}`);
         }
       });
       
@@ -1016,6 +1039,11 @@
           }
           
           updateActiveButton();
+          
+          // Show transition dropdown when clicking on a transition element
+          if (currentElement === 'transition') {
+            showTransitionDropdown(element);
+          }
         }
       });
 
@@ -1097,7 +1125,7 @@
         
         if (type === 'transition') {
           div.style.textAlign = 'left';
-          div.style.paddingLeft = '1.5in';
+          div.style.paddingLeft = '1.6in';
           div.style.paddingRight = '0';
         } else if (type === 'scene-heading' || type === 'action') {
           div.style.textAlign = 'right';
@@ -1105,7 +1133,7 @@
       } else {
         if (type === 'transition') {
           div.style.textAlign = 'right';
-          div.style.paddingRight = '1.5in';
+          div.style.paddingRight = '1.6in';
           div.style.paddingLeft = '0';
         }
       }
@@ -1233,7 +1261,7 @@
         activeElement.classList.add('rtl-element');
         if (nextType === 'transition') {
           activeElement.style.textAlign = 'left';
-          activeElement.style.paddingLeft = '1.5in';
+          activeElement.style.paddingLeft = '1.6in';
           activeElement.style.paddingRight = '0';
         } else if (nextType === 'scene-heading' || nextType === 'action') {
           activeElement.style.textAlign = 'right';
@@ -1244,7 +1272,7 @@
         activeElement.classList.remove('rtl-element');
         if (nextType === 'transition') {
           activeElement.style.textAlign = 'right';
-          activeElement.style.paddingRight = '1.5in';
+          activeElement.style.paddingRight = '1.6in';
           activeElement.style.paddingLeft = '0';
         } else {
           activeElement.style.textAlign = '';
@@ -1457,7 +1485,7 @@
       document.getElementById('export-modal-container').style.display = 'none';
       
       if (format === 'html') {
-        const exportHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title><style>body{font-family:Courier,monospace;line-height:1.5;margin:40px}.scene-heading{text-transform:uppercase;font-weight:bold;margin-top:2em;padding-left:1.5in;padding-right:1.5in}.action{margin:1em 0;padding-left:1.5in;padding-right:1.5in}.character{text-transform:uppercase;margin:1.5em 0 0 0;padding-left:3.5in;padding-right:3.5in;font-weight:bold}.dialogue{margin:0.5em 0 1.5em 0;padding-left:2.5in;padding-right:2.5in}.parenthetical{font-style:italic;margin:0.5em 0;padding-left:3in;padding-right:3in}.transition{text-align:right;margin:1.5em 0;padding-right:1.5in;font-weight:bold;text-transform:uppercase}</style></head><body><h1>${title}</h1><div id="screenplay">${content}</div></body></html>`;
+        const exportHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title><style>body{font-family:Courier,monospace;line-height:1.5;margin:40px}.scene-heading{text-transform:uppercase;font-weight:bold;margin-top:2em;padding-left:1.6in;padding-right:1.6in}.action{margin:1em 0;padding-left:1.6in;padding-right:1.6in}.character{text-transform:uppercase;margin:1.5em 0 0 0;padding-left:3.6in;padding-right:3.6in;font-weight:bold}.dialogue{margin:0.5em 0 1.5em 0;padding-left:2.6in;padding-right:2.6in}.parenthetical{font-style:italic;margin:0.5em 0;padding-left:3.1in;padding-right:3.1in}.transition{text-align:right;margin:1.5em 0;padding-right:1.6in;font-weight:bold;text-transform:uppercase}</style></head><body><h1>${title}</h1><div id="screenplay">${content}</div></body></html>`;
         
         const blob = new Blob([exportHtml], {type: 'text/html'});
         const url = URL.createObjectURL(blob);
@@ -1549,7 +1577,7 @@
           el.classList.add('rtl-element');
           if (el.classList.contains('transition')) {
             el.style.textAlign = 'left';
-            el.style.paddingLeft = '1.5in';
+            el.style.paddingLeft = '1.6in';
             el.style.paddingRight = '0';
           } else if (el.classList.contains('scene-heading') || el.classList.contains('action')) {
             el.style.textAlign = 'right';
@@ -1565,7 +1593,7 @@
           el.classList.remove('rtl-element');
           if (el.classList.contains('transition')) {
             el.style.textAlign = 'right';
-            el.style.paddingRight = '1.5in';
+            el.style.paddingRight = '1.6in';
             el.style.paddingLeft = '0';
           } else {
             el.style.textAlign = '';
