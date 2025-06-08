@@ -13,7 +13,6 @@
       margin: 0;
       padding: 0;
       line-height: 1.2;
-      padding-top: 140px; /* Added to prevent toolbar overlap */
     }
     
     body.light {
@@ -88,7 +87,7 @@
     .page-counter {
       position: fixed;
       right: 20px;
-      top: 120px;
+      top: 120px; /* Adjusted to be below toolbar */
       background-color: #2a1240;
       padding: 5px 10px;
       border-radius: 3px;
@@ -101,11 +100,12 @@
 
     /* Editor */
     #editor {
-      padding: 160px 20px 20px 20px;
+      padding: 180px 20px 20px 20px; /* Increased top padding */
       outline: none;
       white-space: pre-wrap;
       min-height: 80vh;
       font-size: 12pt;
+      margin-top: 100px; /* Added to account for fixed header and toolbar */
     }
 
     /* Title Page Styles */
@@ -618,6 +618,7 @@
     <div class="transition-item" data-text="MATCH CUT TO:">MATCH CUT TO:</div>
     <div class="transition-item" data-text="INTERCUT WITH:">INTERCUT WITH:</div>
     <div class="transition-item" data-text="BACK TO:">BACK TO:</div>
+    <div class="transition-item" data-text="JUMP CUT TO:">JUMP CUT TO:</div>
     <div class="transition-item" data-text="THE END">THE END</div>
   </div>
   
@@ -785,8 +786,8 @@
       // Set up event listeners
       setupListeners();
       
-      // Add initial scene heading
-      addNewElement('scene-heading');
+      // Add initial scene heading (all caps)
+      addNewElement('scene-heading', 'FADE IN:');
     });
 
     function setupListeners() {
@@ -1162,7 +1163,7 @@
         if (!text) {
           div.textContent = isRtlMode ? '.EXT ' : 'EXT. ';
         } else {
-          div.textContent = text;
+          div.textContent = text.toUpperCase(); // Ensure all caps for scene headings
         }
       } else if (type === 'parenthetical' && !text) {
         div.textContent = '()';
