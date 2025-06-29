@@ -4379,3 +4379,58 @@
         `تمت ترجمة ${translatedCount} عنصر إلى الإنجليزية بنجاح` : 
         `Successfully translated ${translatedCount} elements to Arabic`;
       
+      setTimeout(() => {
+        alert(successMessage);
+      }, 500);
+    }
+
+    // Global function for note deletion
+    window.deleteNote = deleteNote;
+
+    // Add scroll to top functionality
+    function addScrollToTopButton() {
+      const scrollBtn = document.createElement('button');
+      scrollBtn.innerHTML = '↑ TOP';
+      scrollBtn.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #472e63;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        z-index: 1000;
+        font-size: 12px;
+        font-weight: bold;
+        display: none;
+      `;
+      
+      scrollBtn.onclick = () => {
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+        window.scrollTo(0, 0);
+      };
+      
+      document.body.appendChild(scrollBtn);
+      
+      window.addEventListener('scroll', () => {
+        if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+          scrollBtn.style.display = 'block';
+        } else {
+          scrollBtn.style.display = 'none';
+        }
+      });
+    }
+
+    // Initialize scroll to top button
+    addScrollToTopButton();
+
+    // Update word count periodically
+    setInterval(() => {
+      updateWordCount();
+    }, 2000);
+  </script>
+</body>
+</html>
